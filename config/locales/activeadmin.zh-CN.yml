@@ -1,0 +1,12 @@
+"zh-CN":
+  active_admin:
+    batch_actions:
+      labels:
+        dashboard: "金指纹"
+        block: "禁用"
+        unblock: "启用"
+        batch_new: "aa"
+    filters:
+      predicates:
+        from: "开始时间"
+        to: "结束时间"
