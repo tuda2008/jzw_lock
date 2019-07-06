@@ -2,12 +2,13 @@
 #
 # Table name: messages
 #
-#  id                :bigint(8)        not null, primary key
+#  id                :bigint           not null, primary key
 #  user_id           :integer          not null
 #  device_id         :integer          not null
 #  oper_cmd          :string(20)       not null
 #  oper_username     :string(20)
 #  device_type       :string(255)      default("lock"), not null
+#  content           :string(60)       default("")
 #  avatar_path       :string(255)
 #  gif_path          :string(255)
 #  ori_picture_paths :text(65535)

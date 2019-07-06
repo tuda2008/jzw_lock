@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_07_06_113449) do
+ActiveRecord::Schema.define(version: 2019_07_06_141509) do
 
   create_table "active_admin_comments", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
     t.string "namespace"
@@ -116,6 +116,15 @@ ActiveRecord::Schema.define(version: 2019_07_06_113449) do
     t.index ["product_id"], name: "index_category_products_on_product_id"
   end
 
+  create_table "device_permissions", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
+    t.integer "device_id", null: false
+    t.integer "ownership", null: false
+    t.integer "permission_id", null: false
+    t.index ["device_id", "ownership"], name: "index_device_permissions_on_device_ownership"
+    t.index ["device_id", "permission_id"], name: "index_device_permissions_on_device_permission"
+    t.index ["device_id"], name: "index_device_permissions_on_device"
+  end
+
   create_table "device_statuses", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
     t.string "name", limit: 50, default: "未绑定", null: false
     t.integer "category_id", null: false
@@ -129,14 +138,15 @@ ActiveRecord::Schema.define(version: 2019_07_06_113449) do
 
   create_table "devices", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
     t.string "uuid", limit: 10
-    t.string "mac", limit: 60
-    t.string "token", null: false
-    t.integer "status_id", null: false
+    t.string "mac", limit: 40
+    t.string "token", limit: 40, null: false
+    t.integer "product_id"
+    t.integer "status_id", default: 2, null: false
     t.string "alias", limit: 50, default: "门锁", null: false
+    t.string "address", limit: 120, default: ""
     t.string "imei", limit: 60, default: ""
     t.integer "open_num", default: 0
     t.boolean "low_qoe", default: false
-    t.boolean "is_deleted", default: false, null: false
     t.string "wifi_mac", limit: 30
     t.bigint "port"
     t.datetime "created_at", null: false
@@ -147,6 +157,7 @@ ActiveRecord::Schema.define(version: 2019_07_06_113449) do
     t.index ["mac"], name: "index_devices_on_mac", unique: true
     t.index ["open_num"], name: "index_devices_on_open_num"
     t.index ["port"], name: "index_devices_on_port"
+    t.index ["product_id"], name: "index_devices_on_product_id"
     t.index ["status_id"], name: "index_devices_on_status_id"
     t.index ["token"], name: "index_devices_on_token"
     t.index ["uuid"], name: "index_devices_on_uuid"
@@ -196,6 +207,16 @@ ActiveRecord::Schema.define(version: 2019_07_06_113449) do
     t.index ["user_id", "is_deleted"], name: "index_messages_on_user_id_and_is_deleted"
   end
 
+  create_table "permissions", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
+    t.integer "product_id", null: false
+    t.string "permission", null: false
+    t.boolean "visible", default: true
+    t.index ["permission"], name: "index_permissions_on_permission"
+    t.index ["product_id", "visible"], name: "index_permissions_on_product_id_visible"
+    t.index ["product_id"], name: "index_permissions_on_product_id"
+    t.index ["visible"], name: "index_permissions_on_visible"
+  end
+
   create_table "products", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
     t.string "title", null: false
     t.string "intro", default: ""
@@ -213,7 +234,7 @@ ActiveRecord::Schema.define(version: 2019_07_06_113449) do
     t.integer "user_id", null: false
     t.integer "device_id", null: false
     t.integer "ownership", default: 1, null: false
-    t.boolean "visible", default: false
+    t.boolean "visible", default: true
     t.string "encrypted_password", default: ""
     t.index ["device_id"], name: "index_user_devices_on_device_id"
     t.index ["user_id", "device_id", "ownership"], name: "index_user_devices_on_user_id_and_device_id_and_ownership", unique: true

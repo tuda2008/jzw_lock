@@ -2,10 +2,11 @@
 #
 # Table name: user_devices
 #
-#  id                 :bigint(8)        not null, primary key
+#  id                 :bigint           not null, primary key
 #  user_id            :integer          not null
 #  device_id          :integer          not null
 #  ownership          :integer          default(1), not null
+#  visible            :boolean          default(TRUE)
 #  encrypted_password :string(255)      default("")
 #
 

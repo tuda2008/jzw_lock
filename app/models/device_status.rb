@@ -2,13 +2,15 @@
 #
 # Table name: device_statuses
 #
-#  id          :bigint(8)        not null, primary key
+#  id          :bigint           not null, primary key
 #  name        :string(50)       default("未绑定"), not null
 #  category_id :integer          not null
 #  enable      :boolean          default(TRUE)
 #
 
 class DeviceStatus < ApplicationRecord
+	BINDED = 2
+	UNBIND = 1
   belongs_to :category
 
   has_many :devices, foreign_key: 'status_id'

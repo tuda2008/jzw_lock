@@ -2,7 +2,7 @@
 #
 # Table name: brand_categories
 #
-#  id          :bigint(8)        not null, primary key
+#  id          :bigint           not null, primary key
 #  brand_id    :integer          not null
 #  category_id :integer          not null
 #

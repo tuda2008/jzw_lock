@@ -2,7 +2,7 @@
 #
 # Table name: app_versions
 #
-#  id            :bigint(8)        not null, primary key
+#  id            :bigint           not null, primary key
 #  code          :integer          default(1), not null
 #  name          :string(255)      not null
 #  mobile_system :integer          default(3), not null

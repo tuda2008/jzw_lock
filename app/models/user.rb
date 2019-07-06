@@ -2,7 +2,7 @@
 #
 # Table name: users
 #
-#  id          :bigint(8)        not null, primary key
+#  id          :bigint           not null, primary key
 #  provider    :integer          default(1), not null
 #  nickname    :string(255)
 #  mobile      :string(255)
@@ -13,6 +13,10 @@
 #  province    :string(255)
 #  city        :string(255)
 #  gender      :integer          not null
+#  invitor_id  :integer
+#  latitude    :string(30)       default("")
+#  longitude   :string(30)       default("")
+#  address     :string(120)      default("")
 #  created_at  :datetime         not null
 #  updated_at  :datetime         not null
 #

@@ -2,7 +2,7 @@
 #
 # Table name: carousels
 #
-#  id      :bigint(8)        not null, primary key
+#  id      :bigint           not null, primary key
 #  tag     :string(255)      not null
 #  url     :string(255)
 #  images  :string(255)

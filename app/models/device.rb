@@ -2,18 +2,25 @@
 #
 # Table name: devices
 #
-#  id         :bigint(8)        not null, primary key
-#  uuid       :integer          not null
-#  status_id  :integer          not null
+#  id         :bigint           not null, primary key
+#  uuid       :string(10)
+#  mac        :string(40)
+#  token      :string(40)       not null
+#  product_id :integer
+#  status_id  :integer          default(2), not null
 #  alias      :string(50)       default("门锁"), not null
-#  wifi_mac   :string(20)
-#  monitor_sn :string(255)
-#  port       :bigint(8)
+#  address    :string(120)      default("")
+#  imei       :string(60)       default("")
+#  open_num   :integer          default(0)
+#  low_qoe    :boolean          default(FALSE)
+#  wifi_mac   :string(30)
+#  port       :bigint
 #  created_at :datetime         not null
 #  updated_at :datetime         not null
 #
 
 class Device < ApplicationRecord
+  SALT = ""
   has_many :user_devices, :dependent => :destroy
   has_many :users, :through => :user_devices, source: :user
 

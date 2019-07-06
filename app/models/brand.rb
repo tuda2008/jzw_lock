@@ -2,9 +2,9 @@
 #
 # Table name: brands
 #
-#  id         :bigint(8)        not null, primary key
+#  id         :bigint           not null, primary key
 #  name       :string(120)      not null
-#  abbr       :string(60)       not null
+#  abbr       :string(60)       default("")
 #  intro      :string(255)      default("")
 #  tel        :string(255)      default("")
 #  images     :string(255)

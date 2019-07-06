@@ -2,7 +2,7 @@
 #
 # Table name: category_products
 #
-#  id          :bigint(8)        not null, primary key
+#  id          :bigint           not null, primary key
 #  category_id :integer          not null
 #  product_id  :integer          not null
 #

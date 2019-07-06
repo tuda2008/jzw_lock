@@ -4,7 +4,7 @@ class CreateUserDevices < ActiveRecord::Migration[5.2]
 	    t.integer "user_id", null: false
 	    t.integer "device_id", null: false
 	    t.integer "ownership", default: 1, null: false
-	    t.boolean "visible", default: false
+	    t.boolean "visible", default: true
 	    t.string "encrypted_password", default: ""
 
       t.index ["device_id"], name: "index_user_devices_on_device_id"
