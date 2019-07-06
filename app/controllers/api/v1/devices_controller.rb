@@ -62,28 +62,25 @@ class Api::V1::DevicesController < ApplicationController
           unless device
             token = md5(params[:mac].strip + Device::SALT)
             device = Device.create(:mac => params[:mac].strip, :token => token, :uuid => token.first(4))
-            ###第一个超级用户
+            ##todo 设置权限
           else
             if device.status_id == DeviceStatus::UNBIND
-              @device.update_attribute(:status_id, DeviceStatus::BINDED)
-              ###第一个超级用户
-            else
-              ###普通用户
+              @device.update_attribute(:status_id, DeviceStatus::BINDED) 
             end
           end
-          user_device = UserDevice.where(:device => device).first
+          user_device = UserDevice.where(:device => device, :ownership => UserDevice::OWNERSHIP[:super_admin]).first
           unless user_device
             UserDevice.create(:user => @user, :device => device, :ownership => UserDevice::OWNERSHIP[:super_admin])
           else
             ud = UserDevice.where(:user_id => @user.id, :device_id => device.id).first
             unless ud
-              UserDevice.create(:user_id => @user.id, :device_id => device.id)
+              render json: { status: 0, message: "", data: { device_num: UserDevice.where(user_id: @user.id).count } } and return
             else
               ud.update_attribute(:visible, true) unless ud.visible
             end
           end
-          Message.where(:user_id => @user.id, :device_id => device.id).update_all(is_deleted: false)
-          render json: { status: 0, message: "", data: { device_num: UserDevice.where(user_id: @user.id).count }  }
+          Message.where(:user_id => @user.id, :device_id => device.id).last_week.update_all(is_deleted: false)
+          render json: { status: 0, message: "", data: { device_num: UserDevice.where(user_id: @user.id).count } }
         end
       end
     end
@@ -95,14 +92,10 @@ class Api::V1::DevicesController < ApplicationController
         if @device
           user_device = UserDevice.where(:user => @user, :device => @device).first
           if user_device.is_admin?
-            DeviceUuid.where(uuid: @device.uuid).update_all(active: false)
-            @device.destroy
+            UserDevice.where(:device => device).update_all(ownership: UserDevice::OWNERSHIP[:user], visible: false)
+            Message.where(:device_id => device.id).update_all(is_deleted: false)
           else
-            if UserDevice.where(device_id: @device.id).count == 1
-              DeviceUuid.where(uuid: @device.uuid).update_all(active: false)
-            end
-            user_device.destroy
-            #render json: { status: 0, message: "亲，只有管理员才能解绑哦" } and return
+            user_device.update_attributes({:visible => false, :ownership => UserDevice::OWNERSHIP[:user]})
           end
           render json: { status: 1, message: "ok" }
         else

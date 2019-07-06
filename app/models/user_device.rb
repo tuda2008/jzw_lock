@@ -26,6 +26,9 @@ class UserDevice < ApplicationRecord
   #validates :user_id, :uniqueness => { :scope => [:device_id, :ownership] }
   validates :encrypted_password, length: { allow_blank: true, minimum: 4, maximum: 6 }
 
+  scope :visible, -> { where(visible: true) }
+  scope :invisible, -> { where(visible: false) }
+
   before_destroy :soft_remove_messages
 
   def soft_remove_messages
