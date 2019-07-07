@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_07_06_141509) do
+ActiveRecord::Schema.define(version: 2019_07_07_074734) do
 
   create_table "active_admin_comments", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
     t.string "namespace"
@@ -134,6 +134,21 @@ ActiveRecord::Schema.define(version: 2019_07_06_141509) do
     t.index ["enable"], name: "index_device_statuses_on_enable"
     t.index ["name", "category_id", "enable"], name: "device_statuses_name_cate_enable", unique: true
     t.index ["name"], name: "index_device_statuses_on_name"
+  end
+
+  create_table "device_users", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
+    t.integer "device_id", null: false
+    t.integer "user_id"
+    t.integer "device_type", null: false
+    t.integer "device_num", null: false
+    t.string "username", limit: 40, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["device_id", "device_type"], name: "index_device_users_on_device_id_and_device_type"
+    t.index ["device_id", "user_id"], name: "index_device_users_on_device_user_id"
+    t.index ["device_id"], name: "index_device_users_on_device_id"
+    t.index ["device_type"], name: "index_device_users_on_device_type"
+    t.index ["user_id"], name: "index_device_users_on_user_id"
   end
 
   create_table "devices", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|

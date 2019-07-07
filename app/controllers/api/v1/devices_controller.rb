@@ -8,7 +8,7 @@ class Api::V1::DevicesController < ApplicationController
     datas = []
     @devices = Device.joins(:user_devices).where(:user_devices => { user_id: @user.id, visible: true }).reload.page(page).per(10)
     @devices.each do |dv|
-      datas << { id: dv.id, status_id: dv.status_id,
+      datas << { id: dv.id,
                  uuid: dv.uuid, name: dv.alias,
                  status_id: dv.status_id,
                  mac: dv.mac,
@@ -41,7 +41,7 @@ class Api::V1::DevicesController < ApplicationController
         if @device
           data = { id: @device.id, name: @device.alias,
                    mac: @device.mac, token: @device.token,
-                   status_id: @device.status_id, uuid: dv.uuid,
+                   status_id: @device.status_id, uuid: @device.uuid,
                    open_num: @device.open_num, low_qoe: @device.low_qoe,
                    is_admin: @device.is_admin?(@user.id), 
                    imei: @device.imei,
