@@ -79,9 +79,9 @@ class Api::V1::UsersController < ApplicationController
     type = params[:type].to_i
     user = User.find_by(mobile: params[:mobile])
     if type == 1    # 注册
-      return { code: 1, message: "#{params[:mobile])}已经注册", data: {} } if user.present?
+      return { code: 1, message: "#{params[:mobile]}已经注册", data: {} } if user.present?
     elsif type == 4 # 绑定、修改手机号码
-      return { code: 1, message: "#{params[:mobile])}已经被占用", data: {} } if user.present?
+      return { code: 1, message: "#{params[:mobile]}已经被占用", data: {} } if user.present?
     else # 重置密码和修改密码
       return { code: 1, message: "#{params[:mobile]}未注册", data: {} } if user.blank?
     end
