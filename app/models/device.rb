@@ -43,12 +43,17 @@ class Device < ApplicationRecord
   validates :alias, length: { in: 1..10 }
 
   def name
-    self.alias.blank? ? self.device_uuid.category.title : self.alias
+    self.alias
   end
 
   def is_admin?(user_id)
-    ud = self.user_devices.where(user_id: user_id).first
+    ud = self.user_devices.visible.where(user_id: user_id).first
     !ud.nil? && ud.is_admin?
+  end
+
+  def ownership?(user_id)
+    ud = self.user_devices.visible.where(user_id: user_id).first
+    ud.ownership if ud
   end
 
   def invitations_by_user(user_id)

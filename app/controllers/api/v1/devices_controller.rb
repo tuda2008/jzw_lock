@@ -6,10 +6,10 @@ class Api::V1::DevicesController < ApplicationController
   def index
     page = params[:page].blank? ? 1 : params[:page].to_i
     datas = []
-    @devices = Device.joins(:user_devices).includes(:device_status).where(:user_devices => { user_id: @user.id }).reload.page(page).per(10)
+    @devices = Device.joins(:user_devices).where(:user_devices => { user_id: @user.id, visible: true }).reload.page(page).per(10)
     @devices.each do |dv|
-      datas << { id: dv.id, status: dv.device_status.name,
-                 uuid: dv.uuid, name: dv.name,
+      datas << { id: dv.id, status_id: dv.status_id,
+                 uuid: dv.uuid, name: dv.alias,
                  status_id: dv.status_id,
                  mac: dv.mac,
                  token: dv.token }
@@ -39,13 +39,13 @@ class Api::V1::DevicesController < ApplicationController
     respond_to do |format|
       format.json do
         if @device
-          data = { id: @device.id, name: @device.name, 
-                   product: @device.device_uuid.product.title, 
-                   uuid: @device.device_uuid.uuid, code: @device.device_uuid.code,
-                   status_id: @device.status_id,
+          data = { id: @device.id, name: @device.alias,
+                   mac: @device.mac, token: @device.token,
+                   status_id: @device.status_id, uuid: dv.uuid,
                    open_num: @device.open_num, low_qoe: @device.low_qoe,
-                   is_admin: @device.is_admin?(@user.id), imei: @device.imei,
-                   created_at: @device.device_uuid.created_at.strftime('%Y-%m-%d') }
+                   is_admin: @device.is_admin?(@user.id), 
+                   imei: @device.imei,
+                   created_at: @device.created_at.strftime('%Y-%m-%d') }
           render json: { status: 1, message: "ok", data: data, carousels: @carousels } 
         else
           render json: { status: 0, message: "no recored yet" } 
@@ -60,8 +60,8 @@ class Api::V1::DevicesController < ApplicationController
         Device.transaction do
           device = Device.where(:mac => params[:mac].strip).first
           unless device
-            token = md5(params[:mac].strip + Device::SALT)
-            device = Device.create(:mac => params[:mac].strip, :token => token, :uuid => token.first(4))
+            token = Digest::MD5.hexdigest(params[:mac].strip + Device::SALT)
+            device = Device.create(:mac => params[:mac].strip, :token => token, :uuid => token[0..3], :status_id => DeviceStatus::BINDED)
             ##todo 设置权限
           else
             if device.status_id == DeviceStatus::UNBIND
