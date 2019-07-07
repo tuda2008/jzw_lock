@@ -65,7 +65,7 @@ class Api::V1::DevicesController < ApplicationController
             ##todo 设置权限
           else
             if device.status_id == DeviceStatus::UNBIND
-              @device.update_attribute(:status_id, DeviceStatus::BINDED) 
+              @device.update_attribute(:status_id, DeviceStatus::BINDED)
             end
           end
           user_device = UserDevice.where(:device => device, :ownership => UserDevice::OWNERSHIP[:super_admin]).first
@@ -92,6 +92,7 @@ class Api::V1::DevicesController < ApplicationController
         if @device
           user_device = UserDevice.where(:user => @user, :device => @device).first
           if user_device.is_admin?
+            @device.update_attribute(:status_id, DeviceStatus::BINDED)
             UserDevice.where(:device => device).update_all(ownership: UserDevice::OWNERSHIP[:user], visible: false)
             Message.where(:device_id => device.id).update_all(is_deleted: false)
           else
@@ -195,8 +196,9 @@ class Api::V1::DevicesController < ApplicationController
     elsif params[:lock_cmd]=="init"
       #WxMsgDeviceCmdNotifierWorker.perform_in(10.seconds, @device.all_admin_users.map(&:id), "[#{@device.name}]#{@user.name} #{content}", "text")
       Device.transaction do
-        DeviceUuid.where(id: @device.uuid).update_all(active: false)
-        @device.destroy
+        @device.update_attribute(:status_id, DeviceStatus::BINDED)
+        UserDevice.where(:device => @device).update_all(ownership: UserDevice::OWNERSHIP[:user], visible: false)
+        Message.where(:device_id => @device.id).update_all(is_deleted: false)
       end
     end
     respond_to do |format|
