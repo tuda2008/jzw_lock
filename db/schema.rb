@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_07_07_074734) do
+ActiveRecord::Schema.define(version: 2019_07_07_124510) do
 
   create_table "active_admin_comments", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
     t.string "namespace"
@@ -52,6 +52,19 @@ ActiveRecord::Schema.define(version: 2019_07_07_074734) do
     t.index ["code", "mobile_system"], name: "index_app_versions_on_code_and_mobile_system", unique: true
     t.index ["code"], name: "index_app_versions_on_code"
     t.index ["mobile_system"], name: "index_app_versions_on_mobile_system"
+  end
+
+  create_table "auth_codes", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
+    t.string "code"
+    t.string "mobile"
+    t.integer "auth_type"
+    t.boolean "verified", default: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["auth_type", "code", "mobile"], name: "index_auth_codes_on_type_code_mobile"
+    t.index ["code", "mobile"], name: "index_auth_codes_on_code_mobile"
+    t.index ["code"], name: "index_auth_codes_on_code"
+    t.index ["mobile"], name: "index_auth_codes_on_mobile"
   end
 
   create_table "brand_categories", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
@@ -243,6 +256,16 @@ ActiveRecord::Schema.define(version: 2019_07_07_074734) do
     t.index ["title", "visible"], name: "index_products_on_title_and_visible", unique: true
     t.index ["title"], name: "index_products_on_title", unique: true
     t.index ["visible"], name: "index_products_on_visible"
+  end
+
+  create_table "send_sms_logs", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
+    t.string "mobile"
+    t.integer "send_type"
+    t.integer "sms_total", default: 0
+    t.datetime "first_sms_sent_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["mobile", "send_type"], name: "index_sms_logs_on_mobile_type"
   end
 
   create_table "user_devices", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|

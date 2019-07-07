@@ -57,7 +57,7 @@ class User < ApplicationRecord
 
   def self.reload_token
     begin
-      response = HTTParty.get("https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=#{ENV["WECHAT_APP_ID"]}&secret=#{ENV["WECHAT_APP_SECRET"]}", timeout: 2)
+      response = RestClient.get("https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=#{ENV["WECHAT_APP_ID"]}&secret=#{ENV["WECHAT_APP_SECRET"]}", timeout: 2)
       @weixin_token = JSON.parse(response.body)["access_token"]
       @wx_token_expires_in = Time.now + JSON.load(response.body)["expires_in"]
     rescue => e
@@ -75,7 +75,7 @@ class User < ApplicationRecord
         content: content
       }} : content
     begin
-      response = HTTParty.post("https://api.weixin.qq.com/cgi-bin/message/custom/send?access_token=#{self.token}", body: JSON.generate(body), timeout: 2)
+      response = RestClient.post("https://api.weixin.qq.com/cgi-bin/message/custom/send?access_token=#{self.token}", body: JSON.generate(body), timeout: 2)
       result = JSON.parse(response.body)
     rescue => e
       p e.message
@@ -86,7 +86,7 @@ class User < ApplicationRecord
     return nil unless code
     wechat_request_url = "https://api.weixin.qq.com/sns/jscode2session?appid=#{ENV["WECHAT_APP_ID"]}&secret=#{ENV["WECHAT_APP_SECRET"]}&js_code=#{code}&grant_type=authorization_code"
     begin
-      response = HTTParty.post(wechat_request_url, timeout: 2)
+      response = RestClient.post(wechat_request_url, timeout: 2)
       open_id = JSON.load(response.body)["openid"]
       session_key = JSON.load(response.body)["session_key"]
     rescue => e

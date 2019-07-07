@@ -27,7 +27,7 @@ class CreateDevices < ActiveRecord::Migration[5.2]
 	    t.index ["port"], name: "index_devices_on_port"
 	    t.index ["product_id"], name: "index_devices_on_product_id"
 	    t.index ["status_id"], name: "index_devices_on_status_id"
-	    t.index ["token"], name: "index_devices_on_token"
+	    t.index ["token"], name: "index_devices_on_token", unique: true
 	    t.index ["uuid"], name: "index_devices_on_uuid"
 	    t.index ["wifi_mac"], name: "index_devices_on_wifi_mac"
     end

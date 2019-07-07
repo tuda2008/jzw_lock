@@ -59,7 +59,7 @@ gem 'mini_magick', '~> 4.8'
 gem 'posix-spawn'
 
 gem 'knock'
-gem 'httparty'
+gem 'rest-client', '2.0.2'
 
 # 防止大量请求的IP
 gem 'rack-attack'
