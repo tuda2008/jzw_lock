@@ -240,6 +240,20 @@ class Api::V1::DevicesController < ApplicationController
     end
   end
 
+  def set_open_warn
+    du = DeviceUser.where(id: params[:id], device_num: params[:num]).first
+    respond_to do |format|
+      format.json do
+        if du
+          du.update_attribute(:open_need_warn, !du.open_need_warn)
+          render json: { status: 1, message: "ok", data: { open_need_warn: du.open_need_warn } }
+        else
+          render json: { status: 0, message: "error" }
+        end
+      end
+    end
+  end
+
   private
     def find_user
       @user = User.find_by(open_id: params[:openid])

@@ -23,6 +23,7 @@ Rails.application.routes.draw do
       post 'devices/rename', to: 'devices#rename'
       post 'devices/users', to: 'devices#users'
       post 'devices/edit_user', to: 'devices#edit_user'
+      post 'devices/set_open_warn', to: 'devices#set_open_warn'
       post 'invitations/get_token', to: 'invitations#create'
       post 'invitations/join_by_token', to: 'invitations#join_by_token'
       resources :messages, only: [:index, :show]

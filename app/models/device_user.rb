@@ -2,14 +2,15 @@
 #
 # Table name: device_users
 #
-#  id          :bigint           not null, primary key
-#  device_id   :integer          not null
-#  user_id     :integer
-#  device_type :integer          not null
-#  device_num  :integer          not null
-#  username    :string(40)       not null
-#  created_at  :datetime         not null
-#  updated_at  :datetime         not null
+#  id             :bigint           not null, primary key
+#  device_id      :integer          not null
+#  user_id        :integer
+#  device_type    :integer          not null
+#  device_num     :integer          not null
+#  username       :string(40)       not null
+#  created_at     :datetime         not null
+#  updated_at     :datetime         not null
+#  open_need_warn :boolean          default(FALSE)
 #
 
 class DeviceUser < ApplicationRecord

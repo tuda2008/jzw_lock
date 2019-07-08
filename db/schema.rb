@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_07_07_124510) do
+ActiveRecord::Schema.define(version: 2019_07_08_121223) do
 
   create_table "active_admin_comments", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
     t.string "namespace"
@@ -157,6 +157,8 @@ ActiveRecord::Schema.define(version: 2019_07_07_124510) do
     t.string "username", limit: 40, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.boolean "open_need_warn", default: false
+    t.index ["device_id", "device_type", "open_need_warn"], name: "index_device_users_on_device_type_open_warn"
     t.index ["device_id", "device_type"], name: "index_device_users_on_device_id_and_device_type"
     t.index ["device_id", "user_id"], name: "index_device_users_on_device_user_id"
     t.index ["device_id"], name: "index_device_users_on_device_id"
