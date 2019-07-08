@@ -71,6 +71,7 @@
         nickname: "用户名"
         avatar_url: "头像"
         provider: "第三方"
+        mobile: "手机号"
         province: "省-直辖市"
         city: "市"
         gender: "性别"

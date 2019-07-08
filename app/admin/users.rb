@@ -4,6 +4,7 @@ ActiveAdmin.register User do
 
   filter :provider, as: :select, collection: User::PROVIDER_COLLECTION
   filter :nickname
+  filter :mobile
   filter :province
   filter :city
   filter :gender, as: :select, collection: User::GENDER_COLLECTION
@@ -21,6 +22,7 @@ ActiveAdmin.register User do
     column :avatar_url do |user|
       image_tag(user.avatar_url, size: "48x48") unless user.avatar_url.blank?
     end
+    column :mobile
     column :province
     column :city
     column :gender do |user|
@@ -39,6 +41,7 @@ ActiveAdmin.register User do
       row :avatar_url do |user|
         image_tag(user.avatar_url) unless user.avatar_url.blank?
       end
+      row :mobile
       row :province
       row :city
       row :gender do |user|
