@@ -13,7 +13,9 @@ Rails.application.routes.draw do
       get 'users/wechat_auth', to: 'users#wechat_auth'
       get 'users/info', to: 'users#info'
       post 'users/update_wechat_userinfo', to: 'users#update_wechat_userinfo'
-      post 'users/update_gps', to: 'users#update_gps' 
+      post 'users/update_gps', to: 'users#update_gps'
+      post 'users/sms_verification_code', to: 'users#sms_verification_code'
+      post 'users/bind_mobile', to: 'users#bind_mobile'
       resources :devices, only: [:index, :show]
       post 'devices/bind', to: 'devices#bind'
       post 'devices/unbind', to: 'devices#unbind'

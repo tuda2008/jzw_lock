@@ -1,6 +1,6 @@
 class Api::V1::UsersController < ApplicationController
   skip_before_action :verify_authenticity_token
-  before_action :find_user, only: [:update_wechat_userinfo, :update_gps, :info, :sms_verification_code]
+  before_action :find_user, only: [:update_wechat_userinfo, :update_gps, :info, :sms_verification_code, :bind_mobile]
 
   def wechat_auth
   	user = User.find_or_create_by_wechat(params[:code])
@@ -133,7 +133,7 @@ class Api::V1::UsersController < ApplicationController
     if user.present?
       return { status: 0, message: "#{params[:mobile]}已被绑定", data: {} }
     end
-    ac = AuthCode.where('mobile = ? and code = ? and verified = ?', params[:mobile], params[:verification_code], false).first
+    ac = AuthCode.where('mobile = ? and code = ? and auth_type = ? and verified = ?', params[:mobile], params[:verification_code], params[:type], false).first
     if ac.blank?
       return { status: 0, message: "验证码无效", data: {} }
     else
