@@ -68,78 +68,87 @@ class Api::V1::UsersController < ApplicationController
   end
 
   def sms_verification_code
-    unless check_mobile(params[:mobile])
-      return { status: 0, message: "请输入有效的手机号", data: {} }
-    end
-    unless %W(1 2 3 4).include?(params[:type].to_s)
-      return { status: 0, message: "type参数错误", data: {} }
-    end
+    respond_to do |format|
+      format.json do
+        unless check_mobile(params[:mobile])
+          render json: { status: 0, message: "请输入有效的手机号", data: {} }
+        end
+        unless %W(1 2 3 4).include?(params[:type].to_s)
+          render json: { status: 0, message: "type参数错误", data: {} }
+        end
 
-    # 检查手机是否符合获取验证码的要求
-    type = params[:type].to_i
-    user = User.find_by(mobile: params[:mobile])
-    if type == 1    # 注册
-      return { status: 0, message: "#{params[:mobile]}已经注册", data: {} } if user.present?
-    elsif type == 4 # 绑定、修改手机号码
-      return { status: 0, message: "#{params[:mobile]}已经被占用", data: {} } if user.present?
-    else # 重置密码和修改密码
-      return { status: 0, message: "#{params[:mobile]}未注册", data: {} } if user.blank?
-    end
+        # 检查手机是否符合获取验证码的要求
+        type = params[:type].to_i
+        user = User.find_by(mobile: params[:mobile])
+        if type == 1    # 注册
+          render json: { status: 0, message: "#{params[:mobile]}已经注册", data: {} } if user.present?
+        elsif type == 4 # 绑定、修改手机号码
+          render json: { status: 0, message: "#{params[:mobile]}已经被占用", data: {} } if user.present?
+        else # 重置密码和修改密码
+          render json: { status: 0, message: "#{params[:mobile]}未注册", data: {} } if user.blank?
+        end
 
-    # 1分钟内多次提交检测
-    sym = "#{params[:mobile]}_#{params[:type]}".to_sym
-    if session[sym] && ( Time.now.to_i - session[sym].to_i ) < 60 + rand(3)
-      return { status: 0, message: "同一手机号1分钟内只能获取一次验证码，请稍后重试", data: {} }
-    end
+        # 1分钟内多次提交检测
+        sym = "#{params[:mobile]}_#{params[:type]}".to_sym
+        if session[sym] && ( Time.now.to_i - session[sym].to_i ) < 60 + rand(3)
+          render json: { status: 0, message: "同一手机号1分钟内只能获取一次验证码，请稍后重试", data: {} }
+        end
 
-    session[sym] = Time.now.to_i
+        session[sym] = Time.now.to_i
 
-    # 同一手机一天最多获取5次验证码
-    log = SendSmsLog.where('mobile = ? and send_type = ?', params[:mobile], params[:type]).first
-    if log.blank?
-      log = SendSmsLog.create!(mobile: params[:mobile], send_type: params[:type], first_sms_sent_at: Time.now)
-    else
-      dt = Time.now.to_i - log.first_sms_sent_at.to_i
-      if dt > 24 * 3600 # 超过24小时都要重置发送记录
-        log.sms_total = 0
-        log.first_sms_sent_at = Time.now
-        log.save!
-      else # 24小时以内
-        if log.sms_total.to_i >= 5 # 达到5次
-          return { status: 0, message: "同一手机号24小时内只能获取5次验证码，请稍后再试", data: {} }
+        # 同一手机一天最多获取5次验证码
+        log = SendSmsLog.where('mobile = ? and send_type = ?', params[:mobile], params[:type]).first
+        if log.blank?
+          log = SendSmsLog.create!(mobile: params[:mobile], send_type: params[:type], first_sms_sent_at: Time.now)
+        else
+          dt = Time.now.to_i - log.first_sms_sent_at.to_i
+          if dt > 24 * 3600 # 超过24小时都要重置发送记录
+            log.sms_total = 0
+            log.first_sms_sent_at = Time.now
+            log.save!
+          else # 24小时以内
+            if log.sms_total.to_i >= 5 # 达到5次
+              render json: { status: 0, message: "同一手机号24小时内只能获取5次验证码，请稍后再试", data: {} }
+            end
+          end
+        end
+
+        # 获取验证码并发送
+        code = AuthCode.where('mobile = ? and verified = ? and auth_type = ?', params[:mobile], false, type).first
+        code = AuthCode.create!(mobile: params[:mobile], auth_type: type, code: rand(1000..9999).to_s) if code.blank?
+      
+        if code
+          result = send_sms('todo', params[:mobile], code.code, "获取验证码失败")
+          render json: result
+        else
+          render json: { status: 0, message: "验证码生成错误，请重试", data: {} }
         end
       end
-    end
-
-    # 获取验证码并发送
-    code = AuthCode.where('mobile = ? and verified = ? and auth_type = ?', params[:mobile], false, type).first
-    code = AuthCode.create!(mobile: params[:mobile], auth_type: type) if code.blank?
-  
-    if code
-      send_sms('todo', params[:mobile], code.code, "获取验证码失败")
-    else
-      return { status: 0, message: "验证码生成错误，请重试", data: {} }
     end
   end
 
   def bind_mobile
-    unless check_mobile(params[:mobile])
-      return { status: 0, message: "请输入有效的手机号", data: {} }
-    end
-    unless %W(1 2 3 4).include?(params[:type].to_s)
-      return { status: 0, message: "type参数错误", data: {} }
-    end
-    user = User.find_by(mobile: params[:mobile])
-    if user.present?
-      return { status: 0, message: "#{params[:mobile]}已被绑定", data: {} }
-    end
-    ac = AuthCode.where('mobile = ? and code = ? and auth_type = ? and verified = ?', params[:mobile], params[:verification_code], params[:type], false).first
-    if ac.blank?
-      return { status: 0, message: "验证码无效", data: {} }
-    else
-      ac.update_attribute(:verified, true)
-      @user.update_attribute(:mobile, params[:mobile])
-      return { status: 1, message: "ok", data: {} }
+    respond_to do |format|
+      format.json do
+        unless check_mobile(params[:mobile])
+          render json: { status: 0, message: "请输入有效的手机号", data: {} }
+        end
+        unless %W(1 2 3 4).include?(params[:type].to_s)
+          render json: { status: 0, message: "type参数错误", data: {} }
+        end
+        user = User.find_by(mobile: params[:mobile])
+        if user.present?
+          render json: { status: 0, message: "#{params[:mobile]}已被绑定", data: {} }
+        end
+        ac = AuthCode.where('mobile = ? and code = ? and auth_type = ? and verified = ?', params[:mobile], params[:verification_code], params[:type], false).first
+        if ac.blank?
+          render json: { status: 0, message: "验证码无效", data: {} }
+        else
+          ac.update_attribute(:verified, true)
+          @user.update_attribute(:mobile, params[:mobile])
+          render json: { status: 1, message: "ok", data: {} }
+        end
+      end
     end
   end
 
