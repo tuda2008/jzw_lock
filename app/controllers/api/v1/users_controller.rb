@@ -27,7 +27,7 @@ class Api::V1::UsersController < ApplicationController
         end
       end
     end
-  endåå
+  end
 
   def update_gps
     respond_to do |format|
