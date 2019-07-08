@@ -118,7 +118,7 @@ class Api::V1::UsersController < ApplicationController
         code = AuthCode.create!(mobile: params[:mobile], auth_type: type, code: rand(1000..9999).to_s) if code.blank?
       
         if code
-          result = send_sms('todo', params[:mobile], code.code, "获取验证码失败")
+          result = send_sms('todo', params[:mobile], code.code, "获取验证码失败", log)
           render json: result
         else
           render json: { status: 0, message: "验证码生成错误，请重试", data: {} }
@@ -162,7 +162,7 @@ class Api::V1::UsersController < ApplicationController
       mobile =~ /\A1[3|4|5|7|8|9][0-9]\d{4,8}\z/
     end
 
-    def send_sms(api_key, mobile, sms_code, error_msg)
+    def send_sms(api_key, mobile, sms_code, error_msg, log)
       url = "https://sms.yunpian.com/v2/sms/tpl_single_send.json"
       tpl_id = 1689800
       tpl_value = "#code#=#{sms_code}"
