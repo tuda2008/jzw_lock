@@ -222,7 +222,7 @@ class Api::V1::DevicesController < ApplicationController
     end
     respond_to do |format|
       format.json do
-        render json: { status: 1, message: "ok", data: datas, total_pages: users.total_pages, current_page: page }
+        render json: { status: 1, message: "ok", data: datas, total_pages: users.total_pages, current_page: page, total_count: users.total_count }
       end
     end
   end
