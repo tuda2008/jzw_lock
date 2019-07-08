@@ -218,7 +218,7 @@ class Api::V1::DevicesController < ApplicationController
     users = DeviceUser.where(device_id: @device.id, device_type: params[:lock_type]).reload.page(page).per(10)
     datas = []
     users.each do |du|
-      datas << { id: du.id, username: du.username, device_num: du.device_num }
+      datas << { id: du.id, username: du.username, device_num: du.device_num, open_need_warn: du.open_need_warn }
     end
     respond_to do |format|
       format.json do

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_07_08_121223) do
+ActiveRecord::Schema.define(version: 2019_07_08_145203) do
 
   create_table "active_admin_comments", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
     t.string "namespace"
@@ -237,6 +237,14 @@ ActiveRecord::Schema.define(version: 2019_07_08_121223) do
     t.index ["user_id", "is_deleted"], name: "index_messages_on_user_id_and_is_deleted"
   end
 
+  create_table "notifier_details", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
+    t.integer "sys_notifier_id", null: false
+    t.string "mobile", default: ""
+    t.string "content", default: ""
+    t.datetime "created_at", null: false
+    t.index ["sys_notifier_id"], name: "index_notifier_details_on_sys_notifier_id"
+  end
+
   create_table "permissions", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
     t.integer "product_id", null: false
     t.string "permission", null: false
@@ -268,6 +276,16 @@ ActiveRecord::Schema.define(version: 2019_07_08_121223) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["mobile", "send_type"], name: "index_sms_logs_on_mobile_type"
+  end
+
+  create_table "sys_notifiers", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
+    t.integer "device_id", null: false
+    t.integer "author_id", null: false
+    t.integer "notifier_type", default: 1, null: false
+    t.boolean "disabled", default: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["device_id", "notifier_type", "disabled"], name: "index_sys_notifiers_on_device_notifier_disabled"
   end
 
   create_table "user_devices", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
