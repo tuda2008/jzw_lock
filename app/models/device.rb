@@ -40,6 +40,8 @@ class Device < ApplicationRecord
   has_many :invitations, :dependent => :destroy
   has_many :user_invitors, :through => :invitations
 
+  has_many :sys_notifiers
+
   validates :alias, length: { in: 1..10 }
 
   def name

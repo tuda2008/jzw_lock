@@ -5,13 +5,39 @@ class Api::V1::SysNotifiersController < ApplicationController
   def index
     page = params[:page].blank? ? 1 : params[:page].to_i
     datas = []
-    @devices = Device.joins(:user_devices).where(:status_id => DeviceStatus::BINDED, :user_devices => { user_id: @user.id, ownership: UserDevice::OWNERSHIP[:super_admin], visible: true }).reload.page(page).per(5)
+    @devices = Device.joins(:user_devices).includes(:sys_notifiers => :notifier_detail).where(:status_id => DeviceStatus::BINDED, :user_devices => { user_id: @user.id, ownership: UserDevice::OWNERSHIP[:super_admin], visible: true }).reload.page(page).per(5)
     @devices.each do |dv|
-      datas << { id: dv.id, name: dv.alias }
+      details = []
+      dv.sys_notifiers.each do |sys|
+        if sys.notifier_type==1
+          details << { type: sys.notifier_type, disabled: sys.disabled, mobile: sys.notifier_detail.mobile, content: sys.notifier_detail.content }
+        else
+          details << { type: sys.notifier_type, disabled: sys.disabled, mobile: "", content: "" }
+        end
+      end
+      datas << { id: dv.id, name: dv.alias, details: details }
     end
     respond_to do |format|
       format.json do
         render json: { status: 1, message: "ok", data: datas, total_pages: @devices.total_pages, current_page: page, total_count: @devices.total_count }
+      end
+    end
+  end
+
+  def show
+    @device = Device.includes(:sys_notifiers => :notifier_detail).where(:id => params[:device_id], :status_id => DeviceStatus::BINDED).first
+    details = []
+    @device.sys_notifiers.each do |sys|
+      if sys.notifier_type==1
+        details << { type: sys.notifier_type, disabled: sys.disabled, mobile: sys.notifier_detail.mobile, content: sys.notifier_detail.content }
+      else
+        details << { type: sys.notifier_type, disabled: sys.disabled, mobile: "", content: "" }
+      end
+    end
+    datas << { id: @device.id, name: @device.alias, details: details }
+    respond_to do |format|
+      format.json do
+        render json: { status: 1, message: "ok", data: datas }
       end
     end
   end
