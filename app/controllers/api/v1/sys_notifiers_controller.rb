@@ -5,8 +5,15 @@ class Api::V1::SysNotifiersController < ApplicationController
   def index
 		page = params[:page].blank? ? 1 : params[:page].to_i
     datas = []
-
-
+    @devices = Device.joins(:user_devices).where(:status_id => DeviceStatus::BINDED, :user_devices => { user_id: @user.id, ownership: UserDevice::OWNERSHIP[:super_admin], visible: true }).reload.page(page).per(5)
+    @devices.each do |dv|
+      datas << { id: dv.id, name: dv.alias }
+    end
+    respond_to do |format|
+      format.json do
+        render json: { status: 1, message: "ok", data: datas, total_pages: @devices.total_pages, current_page: page, total_count: @devices.total_count }
+      end
+    end
   end
 
   def create
