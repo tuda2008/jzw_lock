@@ -34,7 +34,7 @@ class Api::V1::SysNotifiersController < ApplicationController
         details << { type: sys.notifier_type, disabled: sys.disabled, mobile: "", content: "" }
       end
     end
-    datas << { id: @device.id, name: @device.alias, details: details }
+    datas = { id: @device.id, name: @device.alias, details: details }
     respond_to do |format|
       format.json do
         render json: { status: 1, message: "ok", data: datas }
@@ -43,6 +43,8 @@ class Api::V1::SysNotifiersController < ApplicationController
   end
 
   def create
+    @device = Device.includes(:sys_notifiers => :notifier_detail).where(:id => params[:device_id], :status_id => DeviceStatus::BINDED).first
+    details = []
     notifier = SysNotifier.where(:author_id => @user.id, :device_id => params[:device_id], :notifier_type => params[:type]).first
     respond_to do |format|
       format.json do
@@ -60,7 +62,15 @@ class Api::V1::SysNotifiersController < ApplicationController
           detail = NotifierDetail.where(:sys_notifier_id => notifier.id).first
           detail.update_attributes({:mobile => params[:mobile], :content => params[:content]}) if detail
         end
-        render json: { status: 1, message: "ok", data: {} }
+        @device.sys_notifiers.each do |sys|
+          if sys.notifier_type==1
+            details << { type: sys.notifier_type, disabled: sys.disabled, mobile: sys.notifier_detail.mobile, content: sys.notifier_detail.content }
+          else
+            details << { type: sys.notifier_type, disabled: sys.disabled, mobile: "", content: "" }
+          end
+        end
+        datas = { id: @device.id, name: @device.alias, details: details }
+        render json: { status: 1, message: "ok", data: datas }
       end
     end
   end
