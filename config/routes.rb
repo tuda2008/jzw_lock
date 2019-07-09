@@ -28,6 +28,7 @@ Rails.application.routes.draw do
       post 'invitations/join_by_token', to: 'invitations#join_by_token'
       resources :messages, only: [:index, :show]
       resources :app_versions, only: [:index, :show]
+      resources :sys_notifiers, only: [:index, :create]
     end
   end
   #post 'user_token' => 'user_token#create'
