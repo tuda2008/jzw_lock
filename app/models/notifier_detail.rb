@@ -10,4 +10,8 @@
 #
 
 class NotifierDetail < ApplicationRecord
+	belongs_to :sys_notifier
+
+	validates :mobile, length: { in: 11..12 }
+	validates :content, length: { in: 2..60 }
 end

@@ -13,7 +13,7 @@ class DeviceStatus < ApplicationRecord
 	UNBIND = 1
   belongs_to :category
 
-  has_many :devices, foreign_key: 'status_id'
+  has_many :devices, foreign_key: :status_id
 
   validates :name, :category_id, :enable, presence: true
   validates :name, uniqueness: { :scope => :category_id, case_sensitive: false }, length: { in: 2..10 }
