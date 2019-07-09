@@ -21,21 +21,18 @@ class Api::V1::SysNotifiersController < ApplicationController
     respond_to do |format|
       format.json do
         if notifier
-          notifier.update_attribute(:disabled, params[:switch])
+          notifier.update_attribute(:disabled, params[:switch_status])
         else
-          notifier = SysNotifier.create(:author_id => @user.id, :device_id => params[:device_id], :notifier_type => params[:type].to_i, :disabled => params[:switch])
+          if params[:type].to_i == SysNotifier::TYPE_OPEN_WARN
+            detail = NotifierDetail.new(:mobile => params[:mobile], :content => params[:content])
+            notifier = SysNotifier.create(:author_id => @user.id, :device_id => params[:device_id], :notifier_detail => detail, :notifier_type => params[:type].to_i, :disabled => params[:switch_status])
+          else
+            notifier = SysNotifier.create(:author_id => @user.id, :device_id => params[:device_id], :notifier_type => params[:type].to_i, :disabled => params[:switch_status])
+          end
         end
         if params[:type].to_i == SysNotifier::TYPE_OPEN_WARN
-          detail = NotifierDetail.where(:sys_notifier_id => notifier.id, :mobile => params[:mobile]).first
-          if detail
-            detail.update_attribute(:content, params[:content])
-          else
-            if detail.blank?
-              detail.create(:sys_notifier_id => notifier.id, :mobile => params[:mobile], :content => params[:content])
-            else
-              detail.update_attributes({:mobile => params[:mobile], :content => params[:content]})
-            end
-          end
+          detail = NotifierDetail.where(:sys_notifier_id => notifier.id).first
+          detail.update_attributes({:mobile => params[:mobile], :content => params[:content]}) if detail
         end
         render json: { status: 1, message: "ok", data: {} }
       end
