@@ -62,7 +62,7 @@ class Api::V1::SysNotifiersController < ApplicationController
           detail = NotifierDetail.where(:sys_notifier_id => notifier.id).first
           detail.update_attributes({:mobile => params[:mobile], :content => params[:content]}) if detail
         end
-        @device.sys_notifiers.each do |sys|
+        @device.sys_notifiers.reload.each do |sys|
           if sys.notifier_type==1
             details << { type: sys.notifier_type, disabled: sys.disabled, mobile: sys.notifier_detail.mobile, content: sys.notifier_detail.content }
           else

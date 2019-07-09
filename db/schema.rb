@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_07_08_145203) do
+ActiveRecord::Schema.define(version: 2019_07_09_143206) do
 
   create_table "active_admin_comments", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
     t.string "namespace"
@@ -338,6 +338,12 @@ ActiveRecord::Schema.define(version: 2019_07_08_145203) do
     t.index ["provider"], name: "index_users_on_provider"
     t.index ["province"], name: "index_users_on_province"
     t.index ["session_key"], name: "index_users_on_session_key"
+  end
+
+  create_table "wechat_form_ids", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
+    t.integer "user_id", null: false
+    t.text "form_ids"
+    t.index ["user_id"], name: "index_wechat_form_ids_on_user_id"
   end
 
 end

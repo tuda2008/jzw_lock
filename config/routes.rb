@@ -26,6 +26,7 @@ Rails.application.routes.draw do
       post 'devices/set_open_warn', to: 'devices#set_open_warn'
       post 'invitations/get_token', to: 'invitations#create'
       post 'invitations/join_by_token', to: 'invitations#join_by_token'
+      post 'wechat/update_form_ids', to: 'wechat#update_form_ids'
       resources :messages, only: [:index, :show]
       resources :app_versions, only: [:index, :show]
       resources :sys_notifiers, only: [:index, :show, :create]
