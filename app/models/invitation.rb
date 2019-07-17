@@ -4,9 +4,9 @@
 #
 #  id                     :bigint           not null, primary key
 #  user_id                :integer          not null
+#  inviter_id             :integer          not null
 #  device_id              :integer          not null
 #  invitation_token       :string(255)      not null
-#  invitation_limit       :integer          default(5), not null
 #  invitation_expired_at  :datetime
 #  invitation_accepted_at :datetime
 #  invitation_created_at  :datetime

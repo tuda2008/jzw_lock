@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_07_09_143206) do
+ActiveRecord::Schema.define(version: 2019_07_17_141603) do
 
   create_table "active_admin_comments", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
     t.string "namespace"
@@ -65,6 +65,18 @@ ActiveRecord::Schema.define(version: 2019_07_09_143206) do
     t.index ["code", "mobile"], name: "index_auth_codes_on_code_mobile"
     t.index ["code"], name: "index_auth_codes_on_code"
     t.index ["mobile"], name: "index_auth_codes_on_mobile"
+  end
+
+  create_table "ble_settings", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
+    t.integer "user_id", null: false
+    t.integer "device_id", null: false
+    t.string "cycle"
+    t.datetime "start_at", null: false
+    t.datetime "end_at", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id", "device_id", "cycle"], name: "index_ble_settings_on_user_device_cycle"
+    t.index ["user_id", "device_id"], name: "index_ble_settings_on_user_device"
   end
 
   create_table "brand_categories", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
@@ -189,21 +201,22 @@ ActiveRecord::Schema.define(version: 2019_07_09_143206) do
     t.index ["port"], name: "index_devices_on_port"
     t.index ["product_id"], name: "index_devices_on_product_id"
     t.index ["status_id"], name: "index_devices_on_status_id"
-    t.index ["token"], name: "index_devices_on_token"
+    t.index ["token"], name: "index_devices_on_token", unique: true
     t.index ["uuid"], name: "index_devices_on_uuid"
     t.index ["wifi_mac"], name: "index_devices_on_wifi_mac"
   end
 
   create_table "invitations", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
     t.integer "user_id", null: false
+    t.integer "inviter_id", null: false
     t.integer "device_id", null: false
     t.string "invitation_token", null: false
-    t.integer "invitation_limit", default: 5, null: false
     t.datetime "invitation_expired_at"
     t.datetime "invitation_accepted_at"
     t.datetime "invitation_created_at"
     t.index ["device_id"], name: "index_invitations_on_device_id"
     t.index ["invitation_token"], name: "index_invitations_on_invitation_token", unique: true
+    t.index ["inviter_id", "device_id"], name: "index_invitations_on_inviter_id_and_device_id"
     t.index ["user_id", "device_id"], name: "index_invitations_on_user_id_and_device_id"
     t.index ["user_id"], name: "index_invitations_on_user_id"
   end
@@ -315,7 +328,7 @@ ActiveRecord::Schema.define(version: 2019_07_09_143206) do
     t.string "nickname"
     t.string "mobile"
     t.string "avatar_url"
-    t.string "open_id", null: false
+    t.string "open_id"
     t.string "session_key"
     t.string "country"
     t.string "province"
@@ -325,6 +338,7 @@ ActiveRecord::Schema.define(version: 2019_07_09_143206) do
     t.string "latitude", limit: 30, default: ""
     t.string "longitude", limit: 30, default: ""
     t.string "address", limit: 120, default: ""
+    t.date "birthday"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["address"], name: "index_users_on_address"
@@ -334,7 +348,7 @@ ActiveRecord::Schema.define(version: 2019_07_09_143206) do
     t.index ["latitude", "longitude"], name: "index_users_on_latitude_and_longitude"
     t.index ["nickname"], name: "index_users_on_nickname"
     t.index ["open_id"], name: "index_users_on_open_id"
-    t.index ["provider", "open_id"], name: "index_users_on_provider_and_open_id", unique: true
+    t.index ["provider", "open_id"], name: "index_users_on_provider_and_open_id"
     t.index ["provider"], name: "index_users_on_provider"
     t.index ["province"], name: "index_users_on_province"
     t.index ["session_key"], name: "index_users_on_session_key"

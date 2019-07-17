@@ -5,7 +5,7 @@ class CreateUsers < ActiveRecord::Migration[5.2]
 	    t.string "nickname"
 	    t.string "mobile"
 	    t.string "avatar_url"
-	    t.string "open_id", null: false
+	    t.string "open_id"
 	    t.string "session_key"
 	    t.string "country"
 	    t.string "province"
@@ -16,6 +16,7 @@ class CreateUsers < ActiveRecord::Migration[5.2]
 	    t.string "latitude", limit: 30, default: ""
 	    t.string "longitude", limit: 30, default: ""
 	    t.string "address", limit: 120, default: ""
+	    t.date   "birthday"
 
 	    t.timestamps
 
@@ -26,7 +27,7 @@ class CreateUsers < ActiveRecord::Migration[5.2]
 	    t.index ["latitude", "longitude"], name: "index_users_on_latitude_and_longitude"
 	    t.index ["nickname"], name: "index_users_on_nickname"
 	    t.index ["open_id"], name: "index_users_on_open_id"
-	    t.index ["provider", "open_id"], name: "index_users_on_provider_and_open_id", unique: true
+	    t.index ["provider", "open_id"], name: "index_users_on_provider_and_open_id"
 	    t.index ["provider"], name: "index_users_on_provider"
 	    t.index ["province"], name: "index_users_on_province"
 	    t.index ["session_key"], name: "index_users_on_session_key"

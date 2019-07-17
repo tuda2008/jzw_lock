@@ -65,7 +65,7 @@ class Api::V1::DevicesController < ApplicationController
             ##todo 设置权限
           else
             if device.status_id == DeviceStatus::UNBIND
-              @device.update_attribute(:status_id, DeviceStatus::BINDED)
+              device.update_attribute(:status_id, DeviceStatus::BINDED)
             end
           end
           user_device = UserDevice.where(:device => device, :ownership => UserDevice::OWNERSHIP[:super_admin]).first
@@ -80,7 +80,7 @@ class Api::V1::DevicesController < ApplicationController
             end
           end
           Message.where(:user_id => @user.id, :device_id => device.id).last_week.update_all(is_deleted: false)
-          render json: { status: 1, message: "", data: {} }
+          render json: { status: 1, message: "", data: { id: device.id, mac: device.mac, uuid: device.uuid } }
         end
       end
     end

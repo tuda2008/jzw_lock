@@ -7,7 +7,7 @@
 #  nickname    :string(255)
 #  mobile      :string(255)
 #  avatar_url  :string(255)
-#  open_id     :string(255)      not null
+#  open_id     :string(255)
 #  session_key :string(255)
 #  country     :string(255)
 #  province    :string(255)
@@ -17,6 +17,7 @@
 #  latitude    :string(30)       default("")
 #  longitude   :string(30)       default("")
 #  address     :string(120)      default("")
+#  birthday    :date
 #  created_at  :datetime         not null
 #  updated_at  :datetime         not null
 #
