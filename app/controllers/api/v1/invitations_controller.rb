@@ -5,7 +5,7 @@ class Api::V1::InvitationsController < ApplicationController
   before_action :find_invitation_token, only: [:join_by_token]
 
   def create
-  	invitation = Invitation.where(user_id: @user.id, device_id: @device.id, invitation_limit: Invitation::MAX_LIMIT).first
+  	invitation = Invitation.where(user_id: @user.id, device_id: @device.id).first
   	if invitation
   	  invitation.update_attribute(:invitation_expired_at, Time.now + Invitation::MAX_DAYS_EXPIRED * 24 * 60 * 60)
   	else
@@ -27,7 +27,7 @@ class Api::V1::InvitationsController < ApplicationController
         if @invitation.nil?
           render json: { status: 0, message: "邀请码不存在" } and return
         else
-    	  	if Time.now > @invitation.invitation_expired_at || @invitation.invitation_limit < 1
+    	  	if Time.now > @invitation.invitation_expired_at
     	      render json: { status: 0, message: "邀请码已过期" } and return
     	    else
     	      device = @invitation.device
@@ -43,7 +43,6 @@ class Api::V1::InvitationsController < ApplicationController
     	      #end
             ui = UserInvitor.new(:user_id => @user.id, :invitation_id => @invitation.id)
             ui.save if ui.valid?
-            @invitation.update_attribute(:invitation_limit, @invitation.invitation_limit-1)
             WxMsgInvitationNotifierWorker.perform_in(10.seconds, device.all_admin_users.map(&:id), "#{@invitation.user.name} 邀请 #{@user.name} 加入了 #{device.name}", "text")
     	      render json: { status: 1, message: "ok", data: {id: device.id, name: device.name} }
     	    end
