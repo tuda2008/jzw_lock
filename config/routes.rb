@@ -10,14 +10,13 @@ Rails.application.routes.draw do
 
   namespace :api do
     namespace :v1 do
-      resources :users, except: [:new, :edit]
       get 'users/wechat_auth', to: 'users#wechat_auth'
       get 'users/info', to: 'users#info'
       post 'users/update_wechat_userinfo', to: 'users#update_wechat_userinfo'
       post 'users/update_gps', to: 'users#update_gps'
       post 'users/sms_verification_code', to: 'users#sms_verification_code'
       post 'users/bind_mobile', to: 'users#bind_mobile'
-      resources :devices, only: [:index, :show]
+      resources :users, except: [:new, :edit]
       post 'devices/bind', to: 'devices#bind'
       post 'devices/unbind', to: 'devices#unbind'
       post 'devices/cmd', to: 'devices#cmd'
@@ -28,6 +27,7 @@ Rails.application.routes.draw do
       post 'invitations/get_token', to: 'invitations#create'
       post 'invitations/join_by_token', to: 'invitations#join_by_token'
       post 'wechat/update_form_ids', to: 'wechat#update_form_ids'
+      resources :devices, only: [:index, :show]
       resources :messages, only: [:index, :show]
       resources :app_versions, only: [:index, :show]
       resources :sys_notifiers, only: [:index, :show, :create]
