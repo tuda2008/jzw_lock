@@ -2,12 +2,12 @@
 #
 # Table name: user_devices
 #
-#  id                 :bigint           not null, primary key
-#  user_id            :integer          not null
-#  device_id          :integer          not null
-#  ownership          :integer          default(1), not null
-#  visible            :boolean          default(TRUE)
-#  encrypted_password :string(255)      default("")
+#  id        :bigint           not null, primary key
+#  author_id :integer          not null
+#  user_id   :integer          not null
+#  device_id :integer
+#  ownership :integer          default(1), not null
+#  visible   :boolean          default(TRUE)
 #
 
 class UserDevice < ApplicationRecord
@@ -16,15 +16,15 @@ class UserDevice < ApplicationRecord
 
   belongs_to :user
   belongs_to :device
-
+  belongs_to :author, foreign_key: :author_id, class_name: :User
   belongs_to :super_admin, foreign_key: :user_id, class_name: :User
   belongs_to :admin_users, foreign_key: :user_id, class_name: :User
   belongs_to :all_admin_users, foreign_key: :user_id, class_name: :User
 
+
   validates :user_id, :device_id, presence: true
   validates :user_id, :uniqueness => { :scope => :device_id }
   #validates :user_id, :uniqueness => { :scope => [:device_id, :ownership] }
-  validates :encrypted_password, length: { allow_blank: true, minimum: 4, maximum: 6 }
 
   scope :visible, -> { where(visible: true) }
   scope :invisible, -> { where(visible: false) }

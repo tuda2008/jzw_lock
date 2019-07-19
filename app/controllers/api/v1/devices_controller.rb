@@ -70,7 +70,7 @@ class Api::V1::DevicesController < ApplicationController
           end
           user_device = UserDevice.where(:device => device, :ownership => UserDevice::OWNERSHIP[:super_admin]).first
           unless user_device
-            UserDevice.create(:user => @user, :device => device, :ownership => UserDevice::OWNERSHIP[:super_admin])
+            UserDevice.create(:author_id => @user, :user => @user, :device => device, :ownership => UserDevice::OWNERSHIP[:super_admin])
           else
             ud = UserDevice.where(:user_id => @user.id, :device_id => device.id).first
             unless ud
