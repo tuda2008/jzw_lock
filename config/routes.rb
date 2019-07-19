@@ -10,6 +10,7 @@ Rails.application.routes.draw do
 
   namespace :api do
     namespace :v1 do
+      resources :users, except: [:new, :edit]
       get 'users/wechat_auth', to: 'users#wechat_auth'
       get 'users/info', to: 'users#info'
       post 'users/update_wechat_userinfo', to: 'users#update_wechat_userinfo'

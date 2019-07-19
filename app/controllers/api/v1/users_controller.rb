@@ -15,6 +15,16 @@ class Api::V1::UsersController < ApplicationController
     end
   end
 
+  def index
+  end
+
+  def show
+  end
+
+  def create
+
+  end
+
   def update_wechat_userinfo
     respond_to do |format|
       format.json do

@@ -302,11 +302,12 @@ ActiveRecord::Schema.define(version: 2019_07_17_141603) do
   end
 
   create_table "user_devices", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
+    t.integer "author_id", null: false
     t.integer "user_id", null: false
-    t.integer "device_id", null: false
+    t.integer "device_id"
     t.integer "ownership", default: 1, null: false
     t.boolean "visible", default: true
-    t.string "encrypted_password", default: ""
+    t.index ["author_id"], name: "index_user_devices_on_author_id"
     t.index ["device_id"], name: "index_user_devices_on_device_id"
     t.index ["user_id", "device_id", "ownership"], name: "index_user_devices_on_user_id_and_device_id_and_ownership", unique: true
     t.index ["user_id", "device_id"], name: "index_user_devices_on_user_id_and_device_id"
