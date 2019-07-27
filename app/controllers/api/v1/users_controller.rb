@@ -19,9 +19,9 @@ class Api::V1::UsersController < ApplicationController
   def index
     page = params[:page].blank? ? 1 : params[:page].to_i
     datas = []
-    users = User.joins(:user_devices).where(:user_devices => { device_id: @device.id }).reload.page(page).per(10)
+    users = User.select("users.id, users.nickname, user_devices.ownership").joins(:user_devices).where(:user_devices => { device_id: @device.id }).reload.page(page).per(10)
     users.each do |user|
-      datas << { id: user.id, name: user.nikename, is_admin: user.ownership != UserDevice::OWNERSHIP[:user] }
+      datas << { id: user.id, name: user.nickname, is_admin: user.ownership != UserDevice::OWNERSHIP[:user], content: "" }
     end
     respond_to do |format|
       format.json do
