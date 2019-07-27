@@ -4,10 +4,9 @@ class Api::V1::MessagesController < ApplicationController
 
   def index
     page = params[:page].blank? ? 1 : params[:page].to_i
-    query = params[:query_date].blank? ? "" : params[:query_date].strip
     datas = []
-    if query.length > 0
-      @messages = Message.visible.where("device_id=? and date(created_at)=?", params[:device_id], query).includes(:device, :user).page(params[:page]).per(10)
+    unless params[:query_date].blank?
+      @messages = Message.visible.where("device_id=? and date(created_at)=?", params[:device_id], Date.parse(params[:query_date].strip)).includes(:device, :user).page(params[:page]).per(10)
     else
       @messages = Message.visible.where(device_id: params[:device_id]).includes(:device, :user).page(params[:page]).per(10)
     end
