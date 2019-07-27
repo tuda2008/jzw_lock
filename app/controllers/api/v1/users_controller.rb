@@ -1,6 +1,6 @@
 class Api::V1::UsersController < ApplicationController
   skip_before_action :verify_authenticity_token
-  before_action :find_user, only: [:update_wechat_userinfo, :update_gps, :info, :sms_verification_code, :bind_mobile]
+  before_action :find_user, only: [:update_wechat_userinfo, :update_gps, :info, :sms_verification_code, :bind_mobile, :create]
 
   def wechat_auth
     user = User.find_or_create_by_wechat(params[:code])
@@ -22,7 +22,29 @@ class Api::V1::UsersController < ApplicationController
   end
 
   def create
-
+    user = User.where(:mobile => params[:mobile]).first
+    device = User.where(:id => params[:device_id]).first
+    respond_to do |format|
+      format.json do
+        unless user
+          user = User.new(nickname: params[:name], mobile: params[:mobile], gender: 1)
+          if user.valid?
+            user.create
+            UserDevice.create(:author_id => @user.id, :user_id => user.id, :device_id => device.id, :ownership => UserDevice::OWNERSHIP[:user])
+            render json: { status: 1, message: "ok" }
+          else
+            render json: { status: 0, message: user.errors.full_messages.to_sentence }
+          end
+        else
+          if user.id == @user.id
+            render json: { status: 0, message: "亲，不能添加自己" }
+          else
+            UserDevice.create(:author_id => @user.id, :user_id => user.id, :device_id => device.id, :ownership => UserDevice::OWNERSHIP[:user])
+            render json: { status: 1, message: "ok" }
+          end 
+        end
+      end
+    end
   end
 
   def update_wechat_userinfo
