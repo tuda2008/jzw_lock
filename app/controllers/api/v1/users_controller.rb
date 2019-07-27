@@ -1,7 +1,7 @@
 class Api::V1::UsersController < ApplicationController
   skip_before_action :verify_authenticity_token
   before_action :find_user, only: [:update_wechat_userinfo, :update_gps, :info, :sms_verification_code, :bind_mobile, :create]
-  before_action :find_device, only: [:index, :create]
+  before_action :find_device, only: [:index, :show, :create]
 
   def wechat_auth
     user = User.find_or_create_by_wechat(params[:code])
@@ -19,9 +19,9 @@ class Api::V1::UsersController < ApplicationController
   def index
     page = params[:page].blank? ? 1 : params[:page].to_i
     datas = []
-    users = User.select("users.id, users.nickname, user_devices.ownership").joins(:user_devices).where(:user_devices => { device_id: @device.id }).reload.page(page).per(10)
+    users = User.select("users.id, users.nickname, users.mobile, users.avatar_url, user_devices.ownership").joins(:user_devices).where(:user_devices => { device_id: @device.id }).reload.page(page).per(10)
     users.each do |user|
-      datas << { id: user.id, name: user.nickname, is_admin: user.ownership != UserDevice::OWNERSHIP[:user], content: "" }
+      datas << { id: user.id, name: user.nickname, mobile: user.mobile, avatar_url: user.avatar_url.blank? ? "" : user.avatar_url, is_admin: user.ownership != UserDevice::OWNERSHIP[:user], content: "" }
     end
     respond_to do |format|
       format.json do
@@ -31,6 +31,13 @@ class Api::V1::UsersController < ApplicationController
   end
 
   def show
+    @user = User.select("users.id, users.nickname, users.mobile, users.avatar_url, user_devices.ownership").joins(:user_devices).where(:id => params[:id], :user_devices => { device_id: @device.id }).first
+    datas = { id: user.id, name: user.nickname, mobile: user.mobile, avatar_url: user.avatar_url.blank? ? "" : user.avatar_url, is_admin: user.ownership != UserDevice::OWNERSHIP[:user], content: "" }
+    respond_to do |format|
+      format.json do
+        render json: { status: 1, message: "ok", data: datas }
+      end
+    end
   end
 
   def create
