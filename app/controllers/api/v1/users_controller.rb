@@ -1,6 +1,7 @@
 class Api::V1::UsersController < ApplicationController
   skip_before_action :verify_authenticity_token
   before_action :find_user, only: [:update_wechat_userinfo, :update_gps, :info, :sms_verification_code, :bind_mobile, :create]
+  before_action :find_device, only: [:index, :create]
 
   def wechat_auth
     user = User.find_or_create_by_wechat(params[:code])
@@ -16,6 +17,17 @@ class Api::V1::UsersController < ApplicationController
   end
 
   def index
+    page = params[:page].blank? ? 1 : params[:page].to_i
+    datas = []
+    users = User.joins(:user_devices).where(:user_devices => { device_id: @device.id }).reload.page(page).per(10)
+    users.each do |user|
+      datas << { id: user.id, name: user.nikename, is_admin: user.ownership != UserDevice::OWNERSHIP[:user] }
+    end
+    respond_to do |format|
+      format.json do
+        render json: { status: 1, message: "ok", data: datas, device_id: @device.id, total_pages: users.total_pages, current_page: page, total_count: users.total_count }
+      end
+    end
   end
 
   def show
@@ -23,14 +35,13 @@ class Api::V1::UsersController < ApplicationController
 
   def create
     user = User.where(:mobile => params[:mobile]).first
-    device = User.where(:id => params[:device_id]).first
     respond_to do |format|
       format.json do
         unless user
           user = User.new(nickname: params[:name], mobile: params[:mobile], gender: 1)
           if user.valid?
-            user.create
-            UserDevice.create(:author_id => @user.id, :user_id => user.id, :device_id => device.id, :ownership => UserDevice::OWNERSHIP[:user])
+            user.save
+            UserDevice.create(:author_id => @user.id, :user_id => user.id, :device_id => @device.id, :ownership => UserDevice::OWNERSHIP[:user])
             render json: { status: 1, message: "ok" }
           else
             render json: { status: 0, message: user.errors.full_messages.to_sentence }
@@ -39,7 +50,7 @@ class Api::V1::UsersController < ApplicationController
           if user.id == @user.id
             render json: { status: 0, message: "亲，不能添加自己" }
           else
-            UserDevice.create(:author_id => @user.id, :user_id => user.id, :device_id => device.id, :ownership => UserDevice::OWNERSHIP[:user])
+            UserDevice.create(:author_id => @user.id, :user_id => user.id, :device_id => @device.id, :ownership => UserDevice::OWNERSHIP[:user])
             render json: { status: 1, message: "ok" }
           end 
         end
@@ -189,6 +200,10 @@ class Api::V1::UsersController < ApplicationController
       @user = User.find_by(open_id: params[:openid])
     end
 
+    def find_device
+      @device = Device.find_by(id: params[:device_id])
+    end
+    
     def check_mobile(mobile)
       return false if mobile.length != 11
       mobile =~ /\A1[3|4|5|7|8|9][0-9]\d{4,8}\z/
