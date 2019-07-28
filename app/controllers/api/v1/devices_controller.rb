@@ -76,7 +76,11 @@ class Api::V1::DevicesController < ApplicationController
             unless ud
               render json: { status: 0, message: "亲，设备已被绑定", data: {} } and return
             else
-              ud.update_attribute(:visible, true) unless ud.visible
+              unless ud.visible
+                ud.update_attribute(:visible, true)
+              else
+                render json: { status: 0, message: "亲，您已经绑定过该设备了", data: {} } and return
+              end
             end
           end
           Message.where(:user_id => @user.id, :device_id => device.id).last_week.update_all(is_deleted: false)
