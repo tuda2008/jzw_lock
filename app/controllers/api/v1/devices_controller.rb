@@ -79,7 +79,7 @@ class Api::V1::DevicesController < ApplicationController
               unless ud.visible
                 ud.update_attribute(:visible, true)
               else
-                render json: { status: 0, message: "亲，您已经绑定过该设备了", data: {} } and return
+                render json: { status: 2, message: "亲，您已经绑定过该设备了", data: { id: device.id, mac: device.mac, uuid: device.uuid } } and return
               end
             end
           end
