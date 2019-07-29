@@ -31,16 +31,17 @@ class Api::V1::UsersController < ApplicationController
   end
 
   def show
+    page = params[:page].blank? ? 1 : params[:page].to_i
     user = User.select("users.id, users.nickname, users.mobile, users.avatar_url, user_devices.ownership").joins(:user_devices).where(:id => params[:id], :user_devices => { device_id: @device.id }).first
-    users = DeviceUser.where("device_id=? and user_id is not null",  @device.id)
+    users = DeviceUser.where("device_id=? and user_id is not null",  @device.id).page(page).per(10)
     result = []
     users.each do |user|
-      result << { id: user.id, type: user.type, devcie_num: user.devcie_num, username: user.username }
+      result << { id: user.id, type: user.device_type, num: user.device_num, username: user.username }
     end
     datas = { id: user.id, name: user.nickname, mobile: user.mobile, avatar_url: user.avatar_url.blank? ? "" : user.avatar_url, is_admin: user.ownership != UserDevice::OWNERSHIP[:user], content: "" }
     respond_to do |format|
       format.json do
-        render json: { status: 1, message: "ok", data: datas, users: result }
+        render json: { status: 1, message: "ok", data: datas, users: result, total_pages: users.total_pages, current_page: page }
       end
     end
   end
