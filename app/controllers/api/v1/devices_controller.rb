@@ -103,8 +103,14 @@ class Api::V1::DevicesController < ApplicationController
             @device.update_attribute(:status_id, DeviceStatus::UNBIND)
             UserDevice.where(:device => device).update_all(ownership: UserDevice::OWNERSHIP[:user], visible: false)
             Message.where(:device_id => device.id).update_all(is_deleted: true)
+            DeviceUser.where(:device_id => @device.id).each do |du|
+              du.destroy
+            end
           else
             user_device.update_attributes({:visible => false, :ownership => UserDevice::OWNERSHIP[:user]})
+            DeviceUser.where(:device_id => @device.id, :user_id => @user.id).each do |du|
+              du.destroy
+            end
           end
           render json: { status: 1, message: "ok" }
         else
@@ -207,6 +213,9 @@ class Api::V1::DevicesController < ApplicationController
         @device.update_attribute(:status_id, DeviceStatus::UNBIND)
         UserDevice.where(:device => @device).update_all(ownership: UserDevice::OWNERSHIP[:user], visible: false)
         Message.where(:device_id => @device.id).update_all(is_deleted: true)
+        DeviceUser.where(:device_id => @device.id).each do |du|
+          du.destroy
+        end
       end
     end
     respond_to do |format|
