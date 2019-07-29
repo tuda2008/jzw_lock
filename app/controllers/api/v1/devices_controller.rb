@@ -6,7 +6,7 @@ class Api::V1::DevicesController < ApplicationController
   def index
     page = params[:page].blank? ? 1 : params[:page].to_i
     datas = []
-    @devices = Device.joins(:user_devices).where(:status_id => DeviceStatus::BINDED).where("(author_id=? or user_id=?) and visible=true", @user.id, @user.id]).group(:device_id).page(page).per(10)
+    @devices = Device.joins(:user_devices).where(:status_id => DeviceStatus::BINDED).where("(author_id=? or user_id=?) and visible=true", @user.id, @user.id).group(:device_id).page(page).per(10)
     @devices.each do |dv|
       datas << { id: dv.id,
                  uuid: dv.uuid, name: dv.alias,
