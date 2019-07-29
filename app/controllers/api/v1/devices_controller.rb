@@ -61,12 +61,8 @@ class Api::V1::DevicesController < ApplicationController
           device = Device.where(:mac => params[:mac].strip).first
           unless device
             token = Digest::MD5.hexdigest(params[:mac].strip + Device::SALT)
-            device = Device.create(:mac => params[:mac].strip, :token => token, :uuid => token[0..3], :status_id => DeviceStatus::BINDED)
+            device = Device.create(:mac => params[:mac].strip, :token => token, :uuid => token[0..3], :status_id => DeviceStatus::UNBIND)
             ##todo 设置权限
-          else
-            if device.status_id == DeviceStatus::UNBIND
-              device.update_attribute(:status_id, DeviceStatus::BINDED)
-            end
           end
           user_device = UserDevice.where(:device => device, :ownership => UserDevice::OWNERSHIP[:super_admin]).first
           unless user_device
@@ -77,6 +73,9 @@ class Api::V1::DevicesController < ApplicationController
               ud.update_attributes({:visible => true, :ownership => UserDevice::OWNERSHIP[:super_admin]})
             end
           else
+            #if device.status_id == DeviceStatus::UNBIND
+              #device.update_attribute(:status_id, DeviceStatus::BINDED)
+            #end
             ud = UserDevice.where(:user_id => @user.id, :device_id => device.id).first
             unless ud
               render json: { status: 0, message: "亲，设备已被绑定", data: {} } and return
@@ -89,7 +88,7 @@ class Api::V1::DevicesController < ApplicationController
             end
           end
           Message.where(:user_id => @user.id, :device_id => device.id).last_week.update_all(is_deleted: false)
-          render json: { status: 1, message: "", data: { id: device.id, mac: device.mac, uuid: device.uuid } }
+          render json: { status: 1, message: "ok", data: { id: device.id, mac: device.mac, uuid: device.uuid } }
         end
       end
     end
@@ -101,9 +100,9 @@ class Api::V1::DevicesController < ApplicationController
         if @device
           user_device = UserDevice.where(:user => @user, :device => @device).first
           if user_device.is_admin?
-            @device.update_attribute(:status_id, DeviceStatus::BINDED)
+            @device.update_attribute(:status_id, DeviceStatus::UNBIND)
             UserDevice.where(:device => device).update_all(ownership: UserDevice::OWNERSHIP[:user], visible: false)
-            Message.where(:device_id => device.id).update_all(is_deleted: false)
+            Message.where(:device_id => device.id).update_all(is_deleted: true)
           else
             user_device.update_attributes({:visible => false, :ownership => UserDevice::OWNERSHIP[:user]})
           end
@@ -132,13 +131,13 @@ class Api::V1::DevicesController < ApplicationController
     content = Message::CMD_NAMES[params[:lock_cmd]]
     username = ""
     unless params[:lock_num].blank?
-      du = DeviceUser.where(device_id: @device.id, device_type: params[:lock_type], device_num: params[:lock_num]).first
+      du = DeviceUser.where(device_id: @device.id, user_id: params[:user_id], device_type: params[:lock_type], device_num: params[:lock_num]).first
       if du
         username = du.username
         content = Message::CMD_NAMES[params[:lock_cmd]] + "(##{params[:lock_num]}-#{username})"
       else
         if params[:lock_cmd]=="password_open_door" || params[:lock_cmd]=="remove_password"
-          du = DeviceUser.where(device_id: @device.id, device_type: 4, device_num: params[:lock_num]).first
+          du = DeviceUser.where(device_id: @device.id, user_id: params[:user_id], device_type: 4, device_num: params[:lock_num]).first
           if du
             username = du.username
             content = Message::CMD_NAMES[params[:lock_cmd]] + "(##{params[:lock_num]}-#{username})"
@@ -179,7 +178,7 @@ class Api::V1::DevicesController < ApplicationController
         if params[:lock_cmd].include?("reg")
           username = params[:user_name].blank? ? ("##{params[:lock_num]}" + DeviceUser::TYPENAME[params[:lock_type]]) : params[:user_name].strip()
           content = Message::CMD_NAMES[params[:lock_cmd]] + "(##{params[:lock_num]}-#{username})"
-          @device.update_attributes({:status_id => 2}) if @device.status_id != 2
+          @device.update_attributes({:status_id => DeviceStatus::BINDED}) if @device.status_id != DeviceStatus::BINDED
           #WxMsgDeviceCmdNotifierWorker.perform_in(10.seconds, @device.all_admin_users.map(&:id), "[#{@device.name}]#{@user.name} #{content}", "text")
         end
         @msg = Message.new(user_id: @user.id, device_id: @device.id, oper_cmd: params[:lock_cmd], oper_username: username, content: content, lock_type: params[:lock_type], lock_num: params[:lock_num])
@@ -187,12 +186,12 @@ class Api::V1::DevicesController < ApplicationController
     end
     if params[:lock_cmd].include?("remove")
       #WxMsgDeviceCmdNotifierWorker.perform_in(10.seconds, @device.all_admin_users.map(&:id), "[#{@device.name}]#{@user.name} #{content}", "text")
-      du = DeviceUser.where(device_id: @device.id, device_type: params[:lock_type], device_num: params[:lock_num]).first
+      du = DeviceUser.where(device_id: @device.id, user_id: params[:user_id], device_type: params[:lock_type], device_num: params[:lock_num]).first
       if params[:lock_type].to_i==2
         if du
           du.destroy
         else
-          du = DeviceUser.where(device_id: @device.id, device_type: 4, device_num: params[:lock_num]).first
+          du = DeviceUser.where(device_id: @device.id, user_id: params[:user_id], device_type: 4, device_num: params[:lock_num]).first
           du.destroy if du
         end
       else
@@ -200,14 +199,14 @@ class Api::V1::DevicesController < ApplicationController
       end
     elsif params[:lock_cmd].include?("reg")
       username = params[:user_name].blank? ? ("##{params[:lock_num]}" + DeviceUser::TYPENAME[params[:lock_type]]) : params[:user_name].strip()
-      du = DeviceUser.new(device_id: @device.id, device_type: params[:lock_type], device_num: params[:lock_num], username: username)
+      du = DeviceUser.new(device_id: @device.id, user_id: params[:user_id], device_type: params[:lock_type], device_num: params[:lock_num], username: username)
       du.save if du.valid?
     elsif params[:lock_cmd]=="init"
       #WxMsgDeviceCmdNotifierWorker.perform_in(10.seconds, @device.all_admin_users.map(&:id), "[#{@device.name}]#{@user.name} #{content}", "text")
       Device.transaction do
-        @device.update_attribute(:status_id, DeviceStatus::BINDED)
+        @device.update_attribute(:status_id, DeviceStatus::UNBIND)
         UserDevice.where(:device => @device).update_all(ownership: UserDevice::OWNERSHIP[:user], visible: false)
-        Message.where(:device_id => @device.id).update_all(is_deleted: false)
+        Message.where(:device_id => @device.id).update_all(is_deleted: true)
       end
     end
     respond_to do |format|

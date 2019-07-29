@@ -32,10 +32,15 @@ class Api::V1::UsersController < ApplicationController
 
   def show
     user = User.select("users.id, users.nickname, users.mobile, users.avatar_url, user_devices.ownership").joins(:user_devices).where(:id => params[:id], :user_devices => { device_id: @device.id }).first
+    users = DeviceUser.where("device_id=? and user_id is not null",  @device.id)
+    result = []
+    users.each do |user|
+      result << { id: user.id, type: user.type, devcie_num: user.devcie_num, username: user.username }
+    end
     datas = { id: user.id, name: user.nickname, mobile: user.mobile, avatar_url: user.avatar_url.blank? ? "" : user.avatar_url, is_admin: user.ownership != UserDevice::OWNERSHIP[:user], content: "" }
     respond_to do |format|
       format.json do
-        render json: { status: 1, message: "ok", data: datas }
+        render json: { status: 1, message: "ok", data: datas, users: result }
       end
     end
   end
