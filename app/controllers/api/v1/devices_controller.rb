@@ -6,7 +6,7 @@ class Api::V1::DevicesController < ApplicationController
   def index
     page = params[:page].blank? ? 1 : params[:page].to_i
     datas = []
-    @devices = Device.joins(:user_devices).where(:status_id => DeviceStatus::BINDED, :user_devices => { user_id: @user.id, visible: true }).reload.page(page).per(10)
+    @devices = Device.joins(:user_devices).where(:status_id => DeviceStatus::BINDED).where("(author_id=? or user_id=?) and visible=true", @user.id, @user.id]).group(:device_id).page(page).per(10)
     @devices.each do |dv|
       datas << { id: dv.id,
                  uuid: dv.uuid, name: dv.alias,
@@ -15,12 +15,12 @@ class Api::V1::DevicesController < ApplicationController
                  token: dv.token }
     end
     @carousels = []
-    home_carousels = Carousel.visible.home.limit(1)
-    unless home_carousels.empty?
-      home_carousels[0].images.each_with_index do |image, index|
-        @carousels << { id: index, url: image.url(:large) }
-      end
-    end
+    #home_carousels = Carousel.visible.home.limit(1)
+    #unless home_carousels.empty?
+    #  home_carousels[0].images.each_with_index do |image, index|
+    #    @carousels << { id: index, url: image.url(:large) }
+    #  end
+    #end
     respond_to do |format|
       format.json do
         render json: { status: 1, message: "ok", data: datas, carousels: @carousels, total_pages: @devices.total_pages, current_page: page, total_count: @devices.total_count }
