@@ -127,27 +127,33 @@ class Api::V1::UsersController < ApplicationController
     respond_to do |format|
       format.json do
         unless check_mobile(params[:mobile])
-          render json: { status: 0, message: "请输入有效的手机号", data: {} }
+          render json: { status: 0, message: "请输入有效的手机号", data: {} } and return
         end
         unless %W(1 2 3 4).include?(params[:type].to_s)
-          render json: { status: 0, message: "type参数错误", data: {} }
+          render json: { status: 0, message: "type参数错误", data: {} } and return
         end
 
         # 检查手机是否符合获取验证码的要求
         type = params[:type].to_i
         user = User.find_by(mobile: params[:mobile])
-        if type == 1    # 注册
-          render json: { status: 0, message: "#{params[:mobile]}已经注册", data: {} } if user.present?
+        if type == 1 # 注册
+          if user.present?
+            render json: { status: 0, message: "#{params[:mobile]}已经注册", data: {} } and return
+          end
         elsif type == 4 # 绑定、修改手机号码
-          render json: { status: 0, message: "#{params[:mobile]}已经被占用", data: {} } if user.present?
+          if user.present? && !user.openid.blank?
+            render json: { status: 0, message: "#{params[:mobile]}已经被占用", data: {} } and return
+          end
         else # 重置密码和修改密码
-          render json: { status: 0, message: "#{params[:mobile]}未注册", data: {} } if user.blank?
+          if user.blank?
+            render json: { status: 0, message: "#{params[:mobile]}未注册", data: {} } and return
+          end
         end
 
         # 1分钟内多次提交检测
         sym = "#{params[:mobile]}_#{params[:type]}".to_sym
         if session[sym] && ( Time.now.to_i - session[sym].to_i ) < 60 + rand(3)
-          render json: { status: 0, message: "同一手机号1分钟内只能获取一次验证码，请稍后重试", data: {} }
+          render json: { status: 0, message: "同一手机号1分钟内只能获取一次验证码，请稍后重试", data: {} } and return
         end
 
         session[sym] = Time.now.to_i
@@ -164,7 +170,7 @@ class Api::V1::UsersController < ApplicationController
             log.save!
           else # 24小时以内
             if log.sms_total.to_i >= 5 # 达到5次
-              render json: { status: 0, message: "同一手机号24小时内只能获取5次验证码，请稍后再试", data: {} }
+              render json: { status: 0, message: "同一手机号24小时内只能获取5次验证码，请稍后再试", data: {} } and return
             end
           end
         end
@@ -187,21 +193,27 @@ class Api::V1::UsersController < ApplicationController
     respond_to do |format|
       format.json do
         unless check_mobile(params[:mobile])
-          render json: { status: 0, message: "请输入有效的手机号", data: {} }
+          render json: { status: 0, message: "请输入有效的手机号", data: {} } and return
         end
         unless %W(1 2 3 4).include?(params[:type].to_s)
-          render json: { status: 0, message: "type参数错误", data: {} }
+          render json: { status: 0, message: "type参数错误", data: {} } and return
         end
         user = User.find_by(mobile: params[:mobile])
         if user.present?
-          render json: { status: 0, message: "#{params[:mobile]}已被绑定", data: {} }
+          unless user.openid.blank?
+            render json: { status: 0, message: "#{params[:mobile]}已被绑定", data: {} } and return
+          else
+            user_copy = @user.dup.clone
+            @user.destroy
+            user.update_attributes(user_copy.attributes.except("created_at", "updated_at", "nickname"))
+          end
         end
         ac = AuthCode.where('mobile = ? and code = ? and auth_type = ? and verified = ?', params[:mobile], params[:verification_code], params[:type], false).first
         if ac.blank?
-          render json: { status: 0, message: "验证码无效", data: {} }
+          render json: { status: 0, message: "验证码无效", data: {} } and return
         else
           ac.update_attribute(:verified, true)
-          @user.update_attribute(:mobile, params[:mobile])
+          @user.update_attribute(:mobile, params[:mobile]) unless @user.nil?
           render json: { status: 1, message: "ok", data: {} }
         end
       end
@@ -227,6 +239,7 @@ class Api::V1::UsersController < ApplicationController
       tpl_id = 1689800
       tpl_value = "#code#=#{sms_code}"
       options = "apikey=#{api_key}&mobile=#{mobile}&tpl_id=#{tpl_id}&tpl_value=#{tpl_value}"
+      hash = {}
       
       begin
         response = RestClient.post(url, options)
@@ -234,22 +247,23 @@ class Api::V1::UsersController < ApplicationController
 
         if result['code'].to_i == 0
           log.update_attribute(:sms_total, log.sms_total + 1)
-          return { status: 1, message: "ok" }
+          hash = { status: 1, message: "ok" }
         else
           if result['code'].to_i == 9 || result['code'].to_i == 17
-            return { status: 0, message: result['msg'] }
+            hash = { status: 0, message: result['msg'] }
           else
             if session && result['code'].to_i == 103
               # 发送失败，更新每分钟发送限制
               sym = "#{mobile}_#{params[:type]}".to_sym
               session.delete(sym)
             end
-            return { status: 0, message: result['msg'] }
+            hash = { status: 0, message: result['msg'] }
           end
         end
       rescue => e
         p e.message
-        return { status: 0, message: "发送失败，请稍后重试" }
+        hash = { status: 0, message: "发送失败，请稍后重试" }
       end
+      hash
     end
 end

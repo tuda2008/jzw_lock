@@ -25,7 +25,7 @@ class Message < ApplicationRecord
   CMD_NAMES = { "reg_finger" => "注册指纹", "reg_password" => "注册密码", "reg_card" => "注册IC卡",
   	            "remove_finger" => "删除指纹", "remove_password" => "删除密码", "remove_card" => "删除IC卡",
                 "check_time" => "同步时间", "finger_open_door" => "指纹开门", "app_open_door" => "APP开门",
-                "update_password" => "修改密码", "update_temp_password" => "修改临时密码",
+                "update_password" => "修改密码", "update_temp_password" => "修改临时密码", "init" => "重置设备",
                 "password_open_door" => "密码开门", "card_open_door" => "IC卡开门", "reg_temp_password" => "注册临时密码",
   	            "get_open_num" => "获取开门次数", "get_qoe" => "获取电量", "ble_open_door" => "蓝牙开门" }
 

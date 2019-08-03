@@ -335,7 +335,6 @@ ActiveRecord::Schema.define(version: 2019_07_17_141603) do
     t.string "province"
     t.string "city"
     t.integer "gender", null: false
-    t.integer "invitor_id"
     t.string "latitude", limit: 30, default: ""
     t.string "longitude", limit: 30, default: ""
     t.string "address", limit: 120, default: ""
@@ -345,7 +344,6 @@ ActiveRecord::Schema.define(version: 2019_07_17_141603) do
     t.index ["address"], name: "index_users_on_address"
     t.index ["city"], name: "index_users_on_city"
     t.index ["gender"], name: "index_users_on_gender"
-    t.index ["invitor_id"], name: "index_users_on_invitor_id"
     t.index ["latitude", "longitude"], name: "index_users_on_latitude_and_longitude"
     t.index ["nickname"], name: "index_users_on_nickname"
     t.index ["open_id"], name: "index_users_on_open_id"

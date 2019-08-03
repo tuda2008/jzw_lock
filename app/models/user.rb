@@ -13,7 +13,6 @@
 #  province    :string(255)
 #  city        :string(255)
 #  gender      :integer          not null
-#  invitor_id  :integer
 #  latitude    :string(30)       default("")
 #  longitude   :string(30)       default("")
 #  address     :string(120)      default("")
@@ -38,6 +37,8 @@ class User < ApplicationRecord
   has_many :user_invitors, :dependent => :destroy
 
   has_many :messages, :dependent => :destroy
+
+  validates :mobile, :open_id, uniqueness: { case_sensitive: false }
 
   scope :male, -> { where(gender: 1) }
   scope :female, -> { where(gender: 2) }
