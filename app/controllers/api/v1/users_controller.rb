@@ -141,7 +141,7 @@ class Api::V1::UsersController < ApplicationController
             render json: { status: 0, message: "#{params[:mobile]}已经注册", data: {} } and return
           end
         elsif type == 4 # 绑定、修改手机号码
-          if user.present? && !user.openid.blank?
+          if user.present? && !user.open_id.blank?
             render json: { status: 0, message: "#{params[:mobile]}已经被占用", data: {} } and return
           end
         else # 重置密码和修改密码
@@ -200,12 +200,14 @@ class Api::V1::UsersController < ApplicationController
         end
         user = User.find_by(mobile: params[:mobile])
         if user.present?
-          unless user.openid.blank?
+          unless user.open_id.blank?
             render json: { status: 0, message: "#{params[:mobile]}已被绑定", data: {} } and return
           else
             user_copy = @user.dup.clone
-            @user.destroy
-            user.update_attributes(user_copy.attributes.except("created_at", "updated_at", "nickname"))
+            User.transaction do
+              @user.destroy
+              user.update_attributes(user_copy.attributes.except("created_at", "updated_at", "nickname", "mobile"))
+            end
           end
         end
         ac = AuthCode.where('mobile = ? and code = ? and auth_type = ? and verified = ?', params[:mobile], params[:verification_code], params[:type], false).first
