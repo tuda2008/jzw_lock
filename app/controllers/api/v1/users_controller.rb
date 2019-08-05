@@ -63,7 +63,12 @@ class Api::V1::UsersController < ApplicationController
           if user.id == @user.id
             render json: { status: 0, message: "亲，不能添加自己" }
           else
-            UserDevice.create(:author_id => @user.id, :user_id => user.id, :device_id => @device.id, :ownership => UserDevice::OWNERSHIP[:user])
+            ud = UserDevice.where(:user_id => user.id, :device_id => @device.id).first
+            if ud
+              ud.update_attributes({:author_id => @user.id, :visible => true, :ownership => UserDevice::OWNERSHIP[:user]})
+            else
+              UserDevice.create(:author_id => @user.id, :user_id => user.id, :device_id => @device.id, :ownership => UserDevice::OWNERSHIP[:user])
+            end
             render json: { status: 1, message: "ok" }
           end 
         end
