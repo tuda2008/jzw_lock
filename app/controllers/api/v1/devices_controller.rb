@@ -29,10 +29,10 @@ class Api::V1::DevicesController < ApplicationController
       format.json do
         if @device
           is_admin = @device.is_admin?(@user.id)
-          has_ble_setting = false
+          has_ble_setting = true
           unless is_admin
             du = BleSetting.where(device_id: @device.id, user_id: @user.id).first
-            has_ble_setting = true unless du.nil?
+            has_ble_setting = false if du.nil?
           end
           data = { id: @device.id, name: @device.alias,
                    mac: @device.mac, token: @device.token,
