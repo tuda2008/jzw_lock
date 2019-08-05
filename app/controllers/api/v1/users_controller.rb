@@ -224,7 +224,7 @@ class Api::V1::UsersController < ApplicationController
             render json: { status: 0, message: "验证码无效", data: {} } and return
           else
             ac.update_attribute(:verified, true)
-            render json: { status: 1, message: "ok", data: {} }
+            render json: { status: 1, message: "ok", device_num: UserDevice.visible.where(user_id: user.id).count }
           end
         else
           ac = AuthCode.where('mobile = ? and code = ? and auth_type = ? and verified = ?', params[:mobile], params[:verification_code], params[:type], false).first
@@ -235,7 +235,7 @@ class Api::V1::UsersController < ApplicationController
             if !@user.nil? && @user.mobile!=params[:mobile]
               @user.update_attribute(:mobile, params[:mobile]) 
             end
-            render json: { status: 1, message: "ok", data: {} }
+            render json: { status: 1, message: "ok", device_num: UserDevice.visible.where(user_id: @user.id).count }
           end
         end
       end
