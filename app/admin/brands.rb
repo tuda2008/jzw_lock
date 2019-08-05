@@ -10,8 +10,8 @@ ActiveAdmin.register Brand do
   filter :visible
 
   scope("全部A") { |supplier| supplier.all }
-  scope("可见厂家Y") { |supplier| Brand.visible }
-  scope("不可见厂家N") { |supplier| supplier.invisible }
+  scope("可见品牌Y") { |supplier| Brand.visible }
+  scope("不可见品牌N") { |supplier| supplier.invisible }
 
   index do
     selectable_column

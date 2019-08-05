@@ -210,22 +210,33 @@ class Api::V1::UsersController < ApplicationController
           unless user.open_id.blank?
             render json: { status: 0, message: "#{params[:mobile]}已被绑定", data: {} } and return
           else
-            hash = @user.dup.clone.attributes.except("id", "created_at", "updated_at", "nickname", "mobile")
+            hash = @user.dup.attributes.except("id", "created_at", "updated_at", "nickname", "mobile")
             User.transaction do
               if @user.id!=user.id
                 @user.destroy
                 user.update_attributes(hash)
+                hash = nil
               end
             end
           end
-        end
-        ac = AuthCode.where('mobile = ? and code = ? and auth_type = ? and verified = ?', params[:mobile], params[:verification_code], params[:type], false).first
-        if ac.blank?
-          render json: { status: 0, message: "验证码无效", data: {} } and return
+          ac = AuthCode.where('mobile = ? and code = ? and auth_type = ? and verified = ?', params[:mobile], params[:verification_code], params[:type], false).first
+          if ac.blank?
+            render json: { status: 0, message: "验证码无效", data: {} } and return
+          else
+            ac.update_attribute(:verified, true)
+            render json: { status: 1, message: "ok", data: {} }
+          end
         else
-          ac.update_attribute(:verified, true)
-          @user.update_attribute(:mobile, params[:mobile]) if !@user.nil? && @user.mobile!=params[:mobile]
-          render json: { status: 1, message: "ok", data: {} }
+          ac = AuthCode.where('mobile = ? and code = ? and auth_type = ? and verified = ?', params[:mobile], params[:verification_code], params[:type], false).first
+          if ac.blank?
+            render json: { status: 0, message: "验证码无效", data: {} } and return
+          else
+            ac.update_attribute(:verified, true)
+            if !@user.nil? && @user.mobile!=params[:mobile]
+              @user.update_attribute(:mobile, params[:mobile]) 
+            end
+            render json: { status: 1, message: "ok", data: {} }
+          end
         end
       end
     end
