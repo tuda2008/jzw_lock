@@ -12,6 +12,7 @@ class Api::V1::DevicesController < ApplicationController
                  uuid: dv.uuid, name: dv.alias,
                  status_id: dv.status_id,
                  mac: dv.mac,
+                 is_admin: dv.is_admin?(@user.id), 
                  token: dv.token }
     end
     @carousels = []
@@ -87,7 +88,6 @@ class Api::V1::DevicesController < ApplicationController
               end
             end
           end
-          Message.where(:user_id => @user.id, :device_id => device.id).last_week.update_all(is_deleted: false)
           render json: { status: 1, message: "ok", data: { id: device.id, mac: device.mac, uuid: device.uuid } }
         end
       end

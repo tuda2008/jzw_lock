@@ -8,7 +8,7 @@ class Api::V1::UsersController < ApplicationController
     respond_to do |format|
       format.json do
         if user
-          render json: { status: 1, message: "ok", data: { openid: user.open_id, mobile: user.mobile.blank? ? "" : user.mobile, device_num: UserDevice.where(user_id: user.id).count } }
+          render json: { status: 1, message: "ok", data: { openid: user.open_id, mobile: user.mobile.blank? ? "" : user.mobile, device_num: UserDevice.visible.where(user_id: user.id).count } }
         else
           render json: { status: 0, message: "授权失败" }
         end
@@ -21,7 +21,7 @@ class Api::V1::UsersController < ApplicationController
     datas = []
     users = User.select("users.id, users.nickname, users.mobile, users.avatar_url, user_devices.ownership").joins(:user_devices).where(:user_devices => { device_id: @device.id, visible: true }).page(page).per(10)
     users.each do |user|
-      datas << { id: user.id, name: user.nickname, mobile: user.mobile, avatar_url: user.avatar_url.blank? ? "" : user.avatar_url, is_admin: user.ownership != UserDevice::OWNERSHIP[:user], content: "" }
+      datas << { id: user.id, name: user.nickname, mobile: user.mobile, avatar_url: user.avatar_url.blank? ? "" : user.avatar_url, is_admin: user.ownership!=UserDevice::OWNERSHIP[:user], content: "" }
     end
     respond_to do |format|
       format.json do
@@ -105,7 +105,7 @@ class Api::V1::UsersController < ApplicationController
           render json: { status: 1, message: "ok", 
             data: {
               id: @user.id,
-              device_num: UserDevice.where(user_id: @user.id).count,
+              device_num: UserDevice.visible.where(user_id: @user.id).count,
               user: {
                 nickName: @user.nickname,
                 avatarUrl: @user.avatar_url,
@@ -203,10 +203,10 @@ class Api::V1::UsersController < ApplicationController
           unless user.open_id.blank?
             render json: { status: 0, message: "#{params[:mobile]}已被绑定", data: {} } and return
           else
-            user_copy = @user.dup.clone
+            hash = @user.dup.clone.attributes.except("id", "created_at", "updated_at", "nickname", "mobile")
             User.transaction do
               @user.destroy
-              user.update_attributes(user_copy.attributes.except("created_at", "updated_at", "nickname", "mobile"))
+              user.update_attributes(hash)
             end
           end
         end
