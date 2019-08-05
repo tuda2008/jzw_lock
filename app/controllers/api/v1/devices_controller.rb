@@ -67,11 +67,11 @@ class Api::V1::DevicesController < ApplicationController
           end
           user_device = UserDevice.where(:device => device, :ownership => UserDevice::OWNERSHIP[:super_admin]).first
           unless user_device
-            ud = UserDevice.where(:author_id => @user.id, :user_id => @user.id, :device_id => device.id).first
+            ud = UserDevice.where(:user_id => @user.id, :device_id => device.id).first
             unless ud
               UserDevice.create(:author_id => @user.id, :user_id => @user.id, :device_id => device.id, :ownership => UserDevice::OWNERSHIP[:super_admin])
             else
-              ud.update_attributes({:visible => true, :ownership => UserDevice::OWNERSHIP[:super_admin]})
+              ud.update_attributes({:author_id => @user.id, :visible => true, :ownership => UserDevice::OWNERSHIP[:super_admin]})
             end
           else
             #if device.status_id == DeviceStatus::UNBIND
