@@ -7,7 +7,7 @@ class Api::V1::DevicesController < ApplicationController
     page = params[:page].blank? ? 1 : params[:page].to_i
     datas = []
     @devices = Device.joins(:user_devices).select("devices.*, user_devices.ownership")
-    .where(:status_id => DeviceStatus::BINDED).where("(author_id=? or user_id=?) and visible=true", @user.id, @user.id)
+    .where(:status_id => DeviceStatus::BINDED).where("user_id=? and visible=true", @user.id)
     .order("user_devices.ownership").page(page).per(10)
     @devices.each do |dv|
       datas << { id: dv.id,

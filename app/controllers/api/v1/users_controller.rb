@@ -84,7 +84,7 @@ class Api::V1::UsersController < ApplicationController
         if @user
           @user.update_attributes({:country => params[:country], :province => params[:province], :city => params[:city],
             :nickname => params[:nickName], :gender => params[:gender], :avatar_url => params[:avatarUrl]})
-          render json: { status: 1, message: "ok" }
+          render json: { status: 1, message: "ok", device_num: UserDevice.visible.where(user_id: @user.id).count }
         else
           render json: { status: 0, message: "更新用户信息失败" }
         end
@@ -212,8 +212,10 @@ class Api::V1::UsersController < ApplicationController
           else
             hash = @user.dup.clone.attributes.except("id", "created_at", "updated_at", "nickname", "mobile")
             User.transaction do
-              @user.destroy
-              user.update_attributes(hash)
+              if @user.id!=user.id
+                @user.destroy
+                user.update_attributes(hash)
+              end
             end
           end
         end
@@ -222,7 +224,7 @@ class Api::V1::UsersController < ApplicationController
           render json: { status: 0, message: "验证码无效", data: {} } and return
         else
           ac.update_attribute(:verified, true)
-          @user.update_attribute(:mobile, params[:mobile]) unless @user.nil?
+          @user.update_attribute(:mobile, params[:mobile]) if !@user.nil? && @user.mobile!=params[:mobile]
           render json: { status: 1, message: "ok", data: {} }
         end
       end
