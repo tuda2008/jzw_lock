@@ -6,37 +6,25 @@ class Api::V1::DevicesController < ApplicationController
   def index
     page = params[:page].blank? ? 1 : params[:page].to_i
     datas = []
-    @devices = Device.joins(:user_devices).where(:status_id => DeviceStatus::BINDED).where("(author_id=? or user_id=?) and visible=true", @user.id, @user.id).group(:device_id).page(page).per(10)
+    @devices = Device.joins(:user_devices).select("devices.*, user_devices.ownership")
+    .where(:status_id => DeviceStatus::BINDED).where("(author_id=? or user_id=?) and visible=true", @user.id, @user.id)
+    .order("user_devices.ownership").page(page).per(10)
     @devices.each do |dv|
       datas << { id: dv.id,
                  uuid: dv.uuid, name: dv.alias,
                  status_id: dv.status_id,
                  mac: dv.mac,
-                 is_admin: dv.is_admin?(@user.id), 
+                 is_admin: dv.ownership!=UserDevice::OWNERSHIP[:user], 
                  token: dv.token }
     end
-    @carousels = []
-    #home_carousels = Carousel.visible.home.limit(1)
-    #unless home_carousels.empty?
-    #  home_carousels[0].images.each_with_index do |image, index|
-    #    @carousels << { id: index, url: image.url(:large) }
-    #  end
-    #end
     respond_to do |format|
       format.json do
-        render json: { status: 1, message: "ok", data: datas, carousels: @carousels, total_pages: @devices.total_pages, current_page: page, total_count: @devices.total_count }
+        render json: { status: 1, message: "ok", data: datas, total_pages: @devices.total_pages, current_page: page, total_count: @devices.total_count }
       end
     end
   end
 
   def show
-    @carousels = []
-    device_carousels = Carousel.visible.device.limit(1)
-    unless device_carousels.empty?
-      device_carousels[0].images.each_with_index do |image, index|
-        @carousels << { id: index, url: image.url(:large) }
-      end
-    end
     respond_to do |format|
       format.json do
         if @device
@@ -47,7 +35,7 @@ class Api::V1::DevicesController < ApplicationController
                    is_admin: @device.is_admin?(@user.id), 
                    imei: @device.imei,
                    created_at: @device.created_at.strftime('%Y-%m-%d') }
-          render json: { status: 1, message: "ok", data: data, carousels: @carousels } 
+          render json: { status: 1, message: "ok", data: data } 
         else
           render json: { status: 0, message: "no recored yet" } 
         end

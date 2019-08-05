@@ -19,7 +19,9 @@ class Api::V1::UsersController < ApplicationController
   def index
     page = params[:page].blank? ? 1 : params[:page].to_i
     datas = []
-    users = User.select("users.id, users.nickname, users.mobile, users.avatar_url, user_devices.ownership").joins(:user_devices).where(:user_devices => { device_id: @device.id, visible: true }).page(page).per(10)
+    users = User.select("users.id, users.nickname, users.mobile, users.avatar_url, user_devices.ownership")
+    .joins(:user_devices).where(:user_devices => { device_id: @device.id, visible: true })
+    .order("user_devices.ownership desc").page(page).per(10)
     users.each do |user|
       datas << { id: user.id, name: user.nickname, mobile: user.mobile, avatar_url: user.avatar_url.blank? ? "" : user.avatar_url, is_admin: user.ownership!=UserDevice::OWNERSHIP[:user], content: "" }
     end
