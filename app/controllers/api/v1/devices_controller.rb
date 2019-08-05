@@ -28,16 +28,23 @@ class Api::V1::DevicesController < ApplicationController
     respond_to do |format|
       format.json do
         if @device
+          is_admin = @device.is_admin?(@user.id)
+          has_ble_setting = false
+          unless is_admin
+            du = BleSetting.where(device_id: @device.id, user_id: @user.id).first
+            has_ble_setting = true unless du.nil?
+          end
           data = { id: @device.id, name: @device.alias,
                    mac: @device.mac, token: @device.token,
                    status_id: @device.status_id, uuid: @device.uuid,
                    open_num: @device.open_num, low_qoe: @device.low_qoe,
-                   is_admin: @device.is_admin?(@user.id), 
+                   is_admin: is_admin, 
                    imei: @device.imei,
+                   has_ble_setting: has_ble_setting,
                    created_at: @device.created_at.strftime('%Y-%m-%d') }
           render json: { status: 1, message: "ok", data: data } 
         else
-          render json: { status: 0, message: "no recored yet" } 
+          render json: { status: 0, message: "no record yet" } 
         end
       end
     end

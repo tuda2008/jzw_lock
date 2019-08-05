@@ -19,9 +19,9 @@
 #
 
 class Message < ApplicationRecord
-  LOCKTYPES = { finger: 1, password: 2, card: 3 }
+  LOCKTYPES = { finger: 1, password: 2, card: 3, temp_password: 4, ble: 5 }
   
-  TYPENAMES = { "1" => "指纹", "2" => "密码", "3" => "IC卡" }
+  TYPENAMES = { "1" => "指纹", "2" => "密码", "3" => "IC卡", "4" => "临时密码", "5" => "蓝牙" }
   CMD_NAMES = { "reg_finger" => "注册指纹", "reg_password" => "注册密码", "reg_card" => "注册IC卡",
   	            "remove_finger" => "删除指纹", "remove_password" => "删除密码", "remove_card" => "删除IC卡",
                 "check_time" => "同步时间", "finger_open_door" => "指纹开门", "app_open_door" => "APP开门",
