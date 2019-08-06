@@ -201,19 +201,55 @@ class Api::V1::DevicesController < ApplicationController
       #WxMsgDeviceCmdNotifierWorker.perform_in(10.seconds, @device.all_admin_users.map(&:id), "[#{@device.name}]#{@user.name} #{content}", "text")
       du = DeviceUser.where(device_id: @device.id, user_id: params[:user_id], device_type: params[:lock_type], device_num: params[:lock_num]).first
       if params[:lock_type].to_i==2
+        ud = UserDevice.where(device_id: @device.id, user_id: params[:user_id]).first
         if du
-          du.destroy
+          Device.transaction do
+            du.destroy
+            ud.update_attribute(:password_count, ud.password_count-1) if ud
+          end
         else
           du = DeviceUser.where(device_id: @device.id, user_id: params[:user_id], device_type: 4, device_num: params[:lock_num]).first
-          du.destroy if du
+          if du
+            Device.transaction do
+              du.destroy
+              ud.update_attribute(:temp_pwd_count, ud.temp_pwd_count-1) if ud
+            end
+          end
         end
       else
-        du.destroy if du
+        if du
+          Device.transaction do
+            du.destroy
+            lock_type = params[:lock_type].to_i
+            ud = UserDevice.where(device_id: @device.id, user_id: params[:user_id]).first
+            if lock_type==1
+              ud.update_attribute(:finger_count, ud.finger_count-1) if ud
+            elsif lock_type==3
+              ud.update_attribute(:card_count, ud.card_count-1) if ud
+            elsif lock_type==5
+              ud.update_attribute(:has_ble_setting, false) if ud
+            end
+          end
+        end
       end
     elsif params[:lock_cmd].include?("reg")
       username = params[:user_name].blank? ? ("##{params[:lock_num]}" + DeviceUser::TYPENAME[params[:lock_type]]) : params[:user_name].strip()
       du = DeviceUser.new(device_id: @device.id, user_id: params[:user_id], device_type: params[:lock_type], device_num: params[:lock_num], username: username)
-      du.save if du.valid?
+      if du.valid?
+        du.save
+        ud = UserDevice.where(device_id: @device.id, user_id: params[:user_id]).first
+        if lock_type==1
+          ud.update_attribute(:finger_count, ud.finger_count+1) if ud
+        elsif lock_type==2
+          ud.update_attribute(:password_count, ud.password_count+1) if ud
+        elsif lock_type==3
+          ud.update_attribute(:card_count, ud.card_count+1) if ud
+        elsif lock_type==4
+          ud.update_attribute(:temp_pwd_count, ud.temp_pwd_count+1) if ud
+        elsif lock_type==5
+          ud.update_attribute(:has_ble_setting, true) if ud
+        end
+      end
     elsif params[:lock_cmd]=="init"
       #WxMsgDeviceCmdNotifierWorker.perform_in(10.seconds, @device.all_admin_users.map(&:id), "[#{@device.name}]#{@user.name} #{content}", "text")
       Device.transaction do
