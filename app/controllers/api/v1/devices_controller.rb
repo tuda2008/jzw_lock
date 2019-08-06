@@ -97,7 +97,7 @@ class Api::V1::DevicesController < ApplicationController
           user_device = UserDevice.where(:user => @user, :device => @device).first
           Device.transaction do
             if user_device.is_admin?
-              users = User.joins(:user_device).where(visible: true, device_id: @device.id)
+              users = User.joins(:user_devices).where(:user_devices => { visible: true, device_id: @device.id })
               users.each do |user|
                 user.update_attribute(:device_count, user.device_count-1)
               end
@@ -214,7 +214,7 @@ class Api::V1::DevicesController < ApplicationController
       #WxMsgDeviceCmdNotifierWorker.perform_in(10.seconds, @device.all_admin_users.map(&:id), "[#{@device.name}]#{@user.name} #{content}", "text")
       Device.transaction do
         @device.update_attribute(:status_id, DeviceStatus::UNBIND)
-        users = User.joins(:user_device).where(visible: true, device_id: @device.id)
+        users = User.joins(:user_devices).where(:user_devices => { visible: true, device_id: @device.id })
         users.each do |user|
           user.update_attribute(:device_count, user.device_count-1)
         end
