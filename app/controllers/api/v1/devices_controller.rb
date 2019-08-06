@@ -82,7 +82,7 @@ class Api::V1::DevicesController < ApplicationController
                 @user.update_attribute(:device_count, @user.device_count+1)
                 ud.update_attribute(:visible, true)
               else
-                render json: { status: 2, message: "亲，您已经绑定过该设备了", data: { id: device.id, mac: device.mac, uuid: device.uuid } } and return
+                render json: { status: 2, message: "亲，您已经绑定过该设备了", data: { id: device.id, mac: device.mac, uuid: device.uuid, is_admin: is_admin } } and return
               end
             end
           end
@@ -104,7 +104,9 @@ class Api::V1::DevicesController < ApplicationController
                 user.update_attribute(:device_count, user.device_count-1)
               end
               @device.update_attribute(:status_id, DeviceStatus::UNBIND)
-              UserDevice.where(:device => device).update_all(ownership: UserDevice::OWNERSHIP[:user], visible: false)
+              UserDevice.where(:device => device).each do |ud|
+                ud.destroy
+              end
               Message.where(:device_id => device.id).update_all(is_deleted: true)
               DeviceUser.where(:device_id => @device.id).each do |du|
                 du.destroy
@@ -220,7 +222,9 @@ class Api::V1::DevicesController < ApplicationController
         users.each do |user|
           user.update_attribute(:device_count, user.device_count-1)
         end
-        UserDevice.where(:device => @device).update_all(ownership: UserDevice::OWNERSHIP[:user], visible: false)
+        UserDevice.where(:device => device).each do |ud|
+          ud.destroy
+        end
         Message.where(:device_id => @device.id).update_all(is_deleted: true)
         DeviceUser.where(:device_id => @device.id).each do |du|
           du.destroy
