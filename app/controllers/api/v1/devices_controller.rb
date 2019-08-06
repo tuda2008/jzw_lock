@@ -237,6 +237,7 @@ class Api::V1::DevicesController < ApplicationController
       du = DeviceUser.new(device_id: @device.id, user_id: params[:user_id], device_type: params[:lock_type], device_num: params[:lock_num], username: username)
       if du.valid?
         du.save
+        lock_type = params[:lock_type].to_i
         ud = UserDevice.where(device_id: @device.id, user_id: params[:user_id]).first
         if lock_type==1
           ud.update_attribute(:finger_count, ud.finger_count+1) if ud
