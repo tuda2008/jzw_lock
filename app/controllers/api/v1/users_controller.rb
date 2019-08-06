@@ -1,6 +1,6 @@
 class Api::V1::UsersController < ApplicationController
   skip_before_action :verify_authenticity_token
-  before_action :find_user, only: [:update_wechat_userinfo, :update_gps, :info, :sms_verification_code, :bind_mobile, :create]
+  before_action :find_user, only: [:update_wechat_userinfo, :update_gps, :info, :sms_verification_code, :bind_mobile, :create, :index]
   before_action :find_device, only: [:index, :show, :create]
 
   def wechat_auth
@@ -21,7 +21,7 @@ class Api::V1::UsersController < ApplicationController
     datas = []
     users = User.select("users.id, users.nickname, users.mobile, users.avatar_url, user_devices.ownership, 
       user_devices.finger_count, user_devices.password_count, user_devices.card_count, user_devices.temp_pwd_count, user_devices.has_ble_setting")
-    .joins(:user_devices).where(:user_devices => { device_id: @device.id, visible: true })
+    .joins(:user_devices).where("user_devices.device_id=? and user_devices.visible=true and (user_devices.author_id=? or user_devices.user_id=?)", @device.id, @user.id, @user.id)
     .order("user_devices.ownership desc").page(page).per(10)
     users.each do |user|
       total_count = user.finger_count + user.password_count + user.card_count + user.temp_pwd_count

@@ -11,7 +11,7 @@ class Api::V1::MessagesController < ApplicationController
       @messages = Message.visible.where(device_id: params[:device_id]).includes(:device, :user).page(params[:page]).per(10)
     end
     @messages.each do |msg|
-      datas << { id: msg.id, oper_cmd: Message::CMD_NAMES[msg.oper_cmd], content: msg.content,
+      datas << { id: msg.id, oper_cmd: msg.oper_cmd, content: msg.content,
                   username: msg.user.nickname,
                   avatar_url: msg.user.avatar_url.blank? ? "" : msg.user.avatar_url,
                   created_at_year: msg.created_at.strftime('%Y'),
