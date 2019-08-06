@@ -214,6 +214,10 @@ class Api::V1::DevicesController < ApplicationController
       #WxMsgDeviceCmdNotifierWorker.perform_in(10.seconds, @device.all_admin_users.map(&:id), "[#{@device.name}]#{@user.name} #{content}", "text")
       Device.transaction do
         @device.update_attribute(:status_id, DeviceStatus::UNBIND)
+        users = User.joins(:user_device).where(visible: true, device_id: @device.id)
+        users.each do |user|
+          user.update_attribute(:device_count, user.device_count-1)
+        end
         UserDevice.where(:device => @device).update_all(ownership: UserDevice::OWNERSHIP[:user], visible: false)
         Message.where(:device_id => @device.id).update_all(is_deleted: true)
         DeviceUser.where(:device_id => @device.id).each do |du|

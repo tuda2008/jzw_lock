@@ -53,7 +53,7 @@ class Api::V1::UsersController < ApplicationController
     respond_to do |format|
       format.json do
         unless user
-          user = User.new(nickname: params[:name], mobile: params[:mobile], gender: 1)
+          user = User.new(nickname: params[:name], mobile: params[:mobile], gender: 1, device_count: 1)
           if user.valid?
             user.save
             UserDevice.create(:author_id => @user.id, :user_id => user.id, :device_id => @device.id, :ownership => UserDevice::OWNERSHIP[:user])
@@ -71,6 +71,7 @@ class Api::V1::UsersController < ApplicationController
             else
               UserDevice.create(:author_id => @user.id, :user_id => user.id, :device_id => @device.id, :ownership => UserDevice::OWNERSHIP[:user], :visible => true)
             end
+            user.update_attribute(:device_count, user.device_count+1)
             render json: { status: 1, message: "ok" }
           end 
         end
@@ -84,7 +85,7 @@ class Api::V1::UsersController < ApplicationController
         if @user
           @user.update_attributes({:country => params[:country], :province => params[:province], :city => params[:city],
             :nickname => params[:nickName], :gender => params[:gender], :avatar_url => params[:avatarUrl]})
-          render json: { status: 1, message: "ok", user_id: user.id, device_num: user.device_count }
+          render json: { status: 1, message: "ok", user_id: @user.id, device_num: @user.device_count }
         else
           render json: { status: 0, message: "更新用户信息失败" }
         end
