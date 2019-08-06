@@ -2,12 +2,17 @@
 #
 # Table name: user_devices
 #
-#  id        :bigint           not null, primary key
-#  author_id :integer          not null
-#  user_id   :integer          not null
-#  device_id :integer
-#  ownership :integer          default(1), not null
-#  visible   :boolean          default(TRUE)
+#  id              :bigint           not null, primary key
+#  author_id       :integer          not null
+#  user_id         :integer          not null
+#  device_id       :integer
+#  ownership       :integer          default(1), not null
+#  finger_count    :integer          default(0)
+#  password_count  :integer          default(0)
+#  card_count      :integer          default(0)
+#  temp_pwd_count  :integer          default(0)
+#  has_ble_setting :boolean          default(FALSE)
+#  visible         :boolean          default(TRUE)
 #
 
 class UserDevice < ApplicationRecord

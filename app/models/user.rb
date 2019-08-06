@@ -2,23 +2,24 @@
 #
 # Table name: users
 #
-#  id          :bigint           not null, primary key
-#  provider    :integer          default(1), not null
-#  nickname    :string(255)
-#  mobile      :string(255)
-#  avatar_url  :string(255)
-#  open_id     :string(255)
-#  session_key :string(255)
-#  country     :string(255)
-#  province    :string(255)
-#  city        :string(255)
-#  gender      :integer          not null
-#  latitude    :string(30)       default("")
-#  longitude   :string(30)       default("")
-#  address     :string(120)      default("")
-#  birthday    :date
-#  created_at  :datetime         not null
-#  updated_at  :datetime         not null
+#  id           :bigint           not null, primary key
+#  provider     :integer          default(1), not null
+#  nickname     :string(255)
+#  mobile       :string(255)
+#  avatar_url   :string(255)
+#  open_id      :string(255)
+#  session_key  :string(255)
+#  country      :string(255)
+#  province     :string(255)
+#  city         :string(255)
+#  gender       :integer          not null
+#  device_count :integer          default(0)
+#  latitude     :string(30)       default("")
+#  longitude    :string(30)       default("")
+#  address      :string(120)      default("")
+#  birthday     :date
+#  created_at   :datetime         not null
+#  updated_at   :datetime         not null
 #
 
 class User < ApplicationRecord

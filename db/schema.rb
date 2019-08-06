@@ -306,6 +306,11 @@ ActiveRecord::Schema.define(version: 2019_07_17_141603) do
     t.integer "user_id", null: false
     t.integer "device_id"
     t.integer "ownership", default: 1, null: false
+    t.integer "finger_count", default: 0
+    t.integer "password_count", default: 0
+    t.integer "card_count", default: 0
+    t.integer "temp_pwd_count", default: 0
+    t.boolean "has_ble_setting", default: false
     t.boolean "visible", default: true
     t.index ["author_id"], name: "index_user_devices_on_author_id"
     t.index ["device_id"], name: "index_user_devices_on_device_id"
@@ -335,6 +340,7 @@ ActiveRecord::Schema.define(version: 2019_07_17_141603) do
     t.string "province"
     t.string "city"
     t.integer "gender", null: false
+    t.integer "device_count", default: 0
     t.string "latitude", limit: 30, default: ""
     t.string "longitude", limit: 30, default: ""
     t.string "address", limit: 120, default: ""
@@ -343,6 +349,7 @@ ActiveRecord::Schema.define(version: 2019_07_17_141603) do
     t.datetime "updated_at", null: false
     t.index ["address"], name: "index_users_on_address"
     t.index ["city"], name: "index_users_on_city"
+    t.index ["device_count"], name: "index_users_on_device_count"
     t.index ["gender"], name: "index_users_on_gender"
     t.index ["latitude", "longitude"], name: "index_users_on_latitude_and_longitude"
     t.index ["nickname"], name: "index_users_on_nickname"

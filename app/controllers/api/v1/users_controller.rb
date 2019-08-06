@@ -8,7 +8,7 @@ class Api::V1::UsersController < ApplicationController
     respond_to do |format|
       format.json do
         if user
-          render json: { status: 1, message: "ok", data: { openid: user.open_id, mobile: user.mobile.blank? ? "" : user.mobile, device_num: UserDevice.visible.where(user_id: user.id).count } }
+          render json: { status: 1, message: "ok", data: { openid: user.open_id, user_id: user.id, mobile: user.mobile.blank? ? "" : user.mobile, device_num: user.device_count } }
         else
           render json: { status: 0, message: "授权失败" }
         end
@@ -35,7 +35,7 @@ class Api::V1::UsersController < ApplicationController
   def show
     page = params[:page].blank? ? 1 : params[:page].to_i
     user = User.select("users.id, users.nickname, users.mobile, users.avatar_url, user_devices.ownership").joins(:user_devices).where(:id => params[:id], :user_devices => { device_id: @device.id }).first
-    users = DeviceUser.where("device_id=? and user_id is not null",  @device.id).page(page).per(10)
+    users = DeviceUser.where("device_id=? and user_id=?", @device.id, user.id).page(page).per(10)
     result = []
     users.each do |user|
       result << { id: user.id, type: user.device_type, num: user.device_num, username: user.username }
@@ -84,7 +84,7 @@ class Api::V1::UsersController < ApplicationController
         if @user
           @user.update_attributes({:country => params[:country], :province => params[:province], :city => params[:city],
             :nickname => params[:nickName], :gender => params[:gender], :avatar_url => params[:avatarUrl]})
-          render json: { status: 1, message: "ok", device_num: UserDevice.visible.where(user_id: @user.id).count }
+          render json: { status: 1, message: "ok", user_id: user.id, device_num: user.device_count }
         else
           render json: { status: 0, message: "更新用户信息失败" }
         end
@@ -112,7 +112,7 @@ class Api::V1::UsersController < ApplicationController
           render json: { status: 1, message: "ok", 
             data: {
               id: @user.id,
-              device_num: UserDevice.visible.where(user_id: @user.id).count,
+              device_num: @user.device_count,
               user: {
                 nickName: @user.nickname,
                 avatarUrl: @user.avatar_url,
@@ -224,7 +224,7 @@ class Api::V1::UsersController < ApplicationController
             render json: { status: 0, message: "验证码无效", data: {} } and return
           else
             ac.update_attribute(:verified, true)
-            render json: { status: 1, message: "ok", device_num: UserDevice.visible.where(user_id: user.id).count }
+            render json: { status: 1, message: "ok", user_id: user.id, device_num: user.device_count }
           end
         else
           ac = AuthCode.where('mobile = ? and code = ? and auth_type = ? and verified = ?', params[:mobile], params[:verification_code], params[:type], false).first
@@ -235,7 +235,7 @@ class Api::V1::UsersController < ApplicationController
             if !@user.nil? && @user.mobile!=params[:mobile]
               @user.update_attribute(:mobile, params[:mobile]) 
             end
-            render json: { status: 1, message: "ok", device_num: UserDevice.visible.where(user_id: @user.id).count }
+            render json: { status: 1, message: "ok", user_id: @user.id, device_num: @user.device_count }
           end
         end
       end

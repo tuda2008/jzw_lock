@@ -58,7 +58,6 @@ class Api::V1::DevicesController < ApplicationController
           unless device
             token = Digest::MD5.hexdigest(params[:mac].strip + Device::SALT)
             device = Device.create(:mac => params[:mac].strip, :token => token, :uuid => token[0..3], :status_id => DeviceStatus::UNBIND)
-            ##todo 设置权限
           end
           user_device = UserDevice.where(:device => device, :ownership => UserDevice::OWNERSHIP[:super_admin]).first
           unless user_device
@@ -68,6 +67,7 @@ class Api::V1::DevicesController < ApplicationController
             else
               ud.update_attributes({:author_id => @user.id, :visible => true, :ownership => UserDevice::OWNERSHIP[:super_admin]})
             end
+            @user.update_attribute(:device_count, @user.device_count+1)
           else
             #if device.status_id == DeviceStatus::UNBIND
               #device.update_attribute(:status_id, DeviceStatus::BINDED)
@@ -77,6 +77,7 @@ class Api::V1::DevicesController < ApplicationController
               render json: { status: 0, message: "亲，设备已被绑定", data: {} } and return
             else
               unless ud.visible
+                @user.update_attribute(:device_count, @user.device_count+1)
                 ud.update_attribute(:visible, true)
               else
                 render json: { status: 2, message: "亲，您已经绑定过该设备了", data: { id: device.id, mac: device.mac, uuid: device.uuid } } and return
@@ -94,17 +95,24 @@ class Api::V1::DevicesController < ApplicationController
       format.json do
         if @device
           user_device = UserDevice.where(:user => @user, :device => @device).first
-          if user_device.is_admin?
-            @device.update_attribute(:status_id, DeviceStatus::UNBIND)
-            UserDevice.where(:device => device).update_all(ownership: UserDevice::OWNERSHIP[:user], visible: false)
-            Message.where(:device_id => device.id).update_all(is_deleted: true)
-            DeviceUser.where(:device_id => @device.id).each do |du|
-              du.destroy
-            end
-          else
-            user_device.update_attributes({:visible => false, :ownership => UserDevice::OWNERSHIP[:user]})
-            DeviceUser.where(:device_id => @device.id, :user_id => @user.id).each do |du|
-              du.destroy
+          Device.transaction do
+            if user_device.is_admin?
+              users = User.joins(:user_device).where(visible: true, device_id: @device.id)
+              users.each do |user|
+                user.update_attribute(:device_count, user.device_count-1)
+              end
+              @device.update_attribute(:status_id, DeviceStatus::UNBIND)
+              UserDevice.where(:device => device).update_all(ownership: UserDevice::OWNERSHIP[:user], visible: false)
+              Message.where(:device_id => device.id).update_all(is_deleted: true)
+              DeviceUser.where(:device_id => @device.id).each do |du|
+                du.destroy
+              end
+            else
+              user_device.update_attributes({:visible => false, :ownership => UserDevice::OWNERSHIP[:user]})
+              @user.update_attribute(:device_count, @user.device_count-1)
+              DeviceUser.where(:device_id => @device.id, :user_id => @user.id).each do |du|
+                du.destroy
+              end
             end
           end
           render json: { status: 1, message: "ok" }
