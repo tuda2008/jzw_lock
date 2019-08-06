@@ -15,7 +15,7 @@
 
 class DeviceUser < ApplicationRecord
   LOCKTYPES = { finger: 1, password: 2, card: 3, temp_password: 4, ble: 5 }
-  TYPENAME = { "1" => "指纹", "2" => "密码", "3" => "IC卡", "4" => "临时密码", "5" => "蓝牙" }
+  TYPENAME = { "1" => "指纹", "2" => "密码", "3" => "门卡", "4" => "临时密码", "5" => "蓝牙" }
 
   belongs_to :user, optional: true
   belongs_to :device
