@@ -54,6 +54,7 @@ class Api::V1::DevicesController < ApplicationController
     respond_to do |format|
       format.json do
         Device.transaction do
+          is_admin = false
           device = Device.where(:mac => params[:mac].strip).first
           unless device
             token = Digest::MD5.hexdigest(params[:mac].strip + Device::SALT)
@@ -68,6 +69,7 @@ class Api::V1::DevicesController < ApplicationController
               ud.update_attributes({:author_id => @user.id, :visible => true, :ownership => UserDevice::OWNERSHIP[:super_admin]})
             end
             @user.update_attribute(:device_count, @user.device_count+1)
+            is_admin = true
           else
             #if device.status_id == DeviceStatus::UNBIND
               #device.update_attribute(:status_id, DeviceStatus::BINDED)
@@ -84,7 +86,7 @@ class Api::V1::DevicesController < ApplicationController
               end
             end
           end
-          render json: { status: 1, message: "ok", data: { id: device.id, mac: device.mac, uuid: device.uuid } }
+          render json: { status: 1, message: "ok", data: { id: device.id, mac: device.mac, uuid: device.uuid, is_admin: is_admin } }
         end
       end
     end
