@@ -104,10 +104,10 @@ class Api::V1::DevicesController < ApplicationController
                 user.update_attribute(:device_count, user.device_count-1)
               end
               @device.update_attribute(:status_id, DeviceStatus::UNBIND)
-              UserDevice.where(:device => device).each do |ud|
+              UserDevice.where(:device => @device).each do |ud|
                 ud.destroy
               end
-              Message.where(:device_id => device.id).update_all(is_deleted: true)
+              Message.where(:device_id => @device.id).update_all(is_deleted: true)
               DeviceUser.where(:device_id => @device.id).each do |du|
                 du.destroy
               end
@@ -259,7 +259,7 @@ class Api::V1::DevicesController < ApplicationController
         users.each do |user|
           user.update_attribute(:device_count, user.device_count-1)
         end
-        UserDevice.where(:device => device).each do |ud|
+        UserDevice.where(:device => @device).each do |ud|
           ud.destroy
         end
         Message.where(:device_id => @device.id).update_all(is_deleted: true)
