@@ -19,11 +19,16 @@ class Api::V1::UsersController < ApplicationController
   def index
     page = params[:page].blank? ? 1 : params[:page].to_i
     datas = []
-    users = User.select("users.id, users.nickname, users.mobile, users.avatar_url, user_devices.ownership")
+    users = User.select("users.id, users.nickname, users.mobile, users.avatar_url, user_devices.ownership, 
+      user_devices.finger_count, user_devices.password_count, user_devices.card_count, user_devices.temp_pwd_count, user_devices.has_ble_setting")
     .joins(:user_devices).where(:user_devices => { device_id: @device.id, visible: true })
     .order("user_devices.ownership desc").page(page).per(10)
     users.each do |user|
-      datas << { id: user.id, name: user.nickname, mobile: user.mobile, avatar_url: user.avatar_url.blank? ? "" : user.avatar_url, is_admin: user.ownership!=UserDevice::OWNERSHIP[:user], content: "" }
+      total_count = user.finger_count + user.password_count + user.card_count + user.temp_pwd_count
+      datas << { id: user.id, name: user.nickname, mobile: user.mobile, avatar_url: user.avatar_url.blank? ? "" : user.avatar_url, is_admin: user.ownership!=UserDevice::OWNERSHIP[:user], 
+        finger_count: user.finger_count, password_count: user.password_count, card_count: user.card_count,
+        temp_pwd_count: user.temp_pwd_count, has_ble_setting: user.has_ble_setting, 
+        content: total_count==0 && !user.has_ble_setting ? "尚未添加任何使用权限" : "" }
     end
     respond_to do |format|
       format.json do
