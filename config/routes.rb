@@ -14,6 +14,7 @@ Rails.application.routes.draw do
       get 'users/info', to: 'users#info'
       post 'users/update_wechat_userinfo', to: 'users#update_wechat_userinfo'
       post 'users/update_gps', to: 'users#update_gps'
+      post 'users/update_name', to: 'users#update_name'
       post 'users/sms_verification_code', to: 'users#sms_verification_code'
       post 'users/bind_mobile', to: 'users#bind_mobile'
       resources :users, except: [:new, :edit]

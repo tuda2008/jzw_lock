@@ -1,6 +1,6 @@
 class Api::V1::UsersController < ApplicationController
   skip_before_action :verify_authenticity_token
-  before_action :find_user, only: [:update_wechat_userinfo, :update_gps, :info, :sms_verification_code, :bind_mobile, :create, :index]
+  before_action :find_user, only: [:update_wechat_userinfo, :update_gps, :update_name, :info, :sms_verification_code, :bind_mobile, :create, :index]
   before_action :find_device, only: [:index, :show, :create]
 
   def wechat_auth
@@ -103,7 +103,7 @@ class Api::V1::UsersController < ApplicationController
       format.json do
         if @user
           @user.update_attributes({:latitude => params[:latitude], :longitude => params[:longitude]})
-          render json: { status: 1, message: "ok" } 
+          render json: { status: 1, message: "ok" }
         else
           render json: { status: 0, message: "没用找到用户记录" }
         end
@@ -243,6 +243,19 @@ class Api::V1::UsersController < ApplicationController
             end
             render json: { status: 1, message: "ok", user_id: @user.id, device_num: @user.device_count }
           end
+        end
+      end
+    end
+  end
+
+  def update_name
+    respond_to do |format|
+      format.json do
+        if @user
+          @user.update_attribute({:nickname => params[:name]})
+          render json: { status: 1, message: "ok" }
+        else
+          render json: { status: 0, message: "没用找到用户" }
         end
       end
     end
