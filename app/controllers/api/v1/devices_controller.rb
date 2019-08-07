@@ -114,11 +114,16 @@ class Api::V1::DevicesController < ApplicationController
                 ud.destroy
               end
             else
-              @user.update_attribute(:device_count, @user.device_count-1)
-              DeviceUser.where(:device_id => @device.id, :user_id => @user.id).each do |du|
-                du.destroy
+              total_count = user_device.finger_count + user_device.password_count + user_device.card_count + user_device.temp_pwd_count
+              if total_count>0 || user_device.has_ble_setting
+                render json: { status: 0, message: "请联系管理员先删除指纹、密码等设置后再删除" } and return
+              else
+                @user.update_attribute(:device_count, @user.device_count-1)
+                DeviceUser.where(:device_id => @device.id, :user_id => @user.id).each do |du|
+                  du.destroy
+                end
+                user_device.destroy
               end
-              user_device.destroy
             end
           end
           render json: { status: 1, message: "ok" }
