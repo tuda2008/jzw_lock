@@ -97,6 +97,7 @@ class Api::V1::DevicesController < ApplicationController
     respond_to do |format|
       format.json do
         if @device
+          @user = @user.find(params[:user_id]) if params[:user_id]
           user_device = UserDevice.where(:user => @user, :device => @device).first
           Device.transaction do
             if user_device.is_admin?
@@ -105,19 +106,19 @@ class Api::V1::DevicesController < ApplicationController
                 user.update_attribute(:device_count, user.device_count-1)
               end
               @device.update_attribute(:status_id, DeviceStatus::UNBIND)
-              UserDevice.where(:device => @device).each do |ud|
-                ud.destroy
-              end
               Message.where(:device_id => @device.id).update_all(is_deleted: true)
               DeviceUser.where(:device_id => @device.id).each do |du|
                 du.destroy
               end
+              UserDevice.where(:device => @device).each do |ud|
+                ud.destroy
+              end
             else
-              user_device.update_attributes({:visible => false, :ownership => UserDevice::OWNERSHIP[:user]})
               @user.update_attribute(:device_count, @user.device_count-1)
               DeviceUser.where(:device_id => @device.id, :user_id => @user.id).each do |du|
                 du.destroy
               end
+              user_device.destroy
             end
           end
           render json: { status: 1, message: "ok" }
