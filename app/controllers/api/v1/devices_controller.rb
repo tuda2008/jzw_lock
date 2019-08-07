@@ -154,7 +154,7 @@ class Api::V1::DevicesController < ApplicationController
           du = DeviceUser.where(device_id: @device.id, user_id: params[:user_id], device_type: 4, device_num: params[:lock_num]).first
           if du
             if params[:lock_cmd]=="password_open_door"
-              params[:lock_cmd]="temp_password_open_door"
+              params[:lock_cmd]="temp_pwd_open_door"
             elsif params[:lock_cmd]=="remove_password"
               params[:lock_cmd]="remove_temp_password"
             end
