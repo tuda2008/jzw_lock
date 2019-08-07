@@ -97,7 +97,7 @@ class Api::V1::DevicesController < ApplicationController
     respond_to do |format|
       format.json do
         if @device
-          @user = @user.find(params[:user_id]) if params[:user_id]
+          @user = User.find(params[:user_id]) if params[:user_id]
           user_device = UserDevice.where(:user => @user, :device => @device).first
           Device.transaction do
             if user_device.is_admin?
