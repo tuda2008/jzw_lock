@@ -216,11 +216,11 @@ class Api::V1::UsersController < ApplicationController
           unless user.open_id.blank?
             render json: { status: 0, message: "#{params[:mobile]}已被绑定", data: {} } and return
           else
-            hash = @user.dup.attributes.except("id", "created_at", "updated_at", "nickname", "mobile")
+            hash = @user.dup.attributes.except("id", "created_at", "updated_at", "nickname", "mobile") if @user
             User.transaction do
               if @user.id!=user.id
                 @user.destroy
-                user.update_attributes(hash)
+                user.update_attributes(hash) unless hash.nil?
                 hash = nil
               end
             end
