@@ -252,7 +252,7 @@ class Api::V1::UsersController < ApplicationController
     respond_to do |format|
       format.json do
         if @user
-          @user.update_attribute({:nickname => params[:name]})
+          @user.update_attribute(:nickname, params[:name].strip)
           render json: { status: 1, message: "ok" }
         else
           render json: { status: 0, message: "没用找到用户" }
