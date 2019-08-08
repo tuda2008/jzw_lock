@@ -267,6 +267,7 @@ class Api::V1::DevicesController < ApplicationController
     elsif params[:lock_cmd]=="init"
       #WxMsgDeviceCmdNotifierWorker.perform_in(10.seconds, @device.all_admin_users.map(&:id), "[#{@device.name}]#{@user.name} #{content}", "text")
       Device.transaction do
+        @msg.save if @msg.valid?
         @device.update_attribute(:status_id, DeviceStatus::UNBIND)
         users = User.joins(:user_devices).where(:user_devices => { visible: true, device_id: @device.id })
         users.each do |user|
@@ -283,8 +284,8 @@ class Api::V1::DevicesController < ApplicationController
     end
     respond_to do |format|
       format.json do
-        if @msg.valid?
-          @msg.save
+        if params[:lock_cmd]=="init" || @msg.valid?
+          @msg.save if params[:lock_cmd]!="init"
           render json: { status: 1, message: "ok" } 
         else
           render json: { status: 0, message: @msg.errors.full_messages.to_sentence } 
