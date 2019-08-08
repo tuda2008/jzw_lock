@@ -59,7 +59,7 @@ class Api::V1::DevicesController < ApplicationController
           device = Device.where(:mac => params[:mac].strip).first
           unless device
             token = Digest::MD5.hexdigest(params[:mac].strip + Device::SALT)
-            device = Device.create(:mac => params[:mac].strip, :token => token, :uuid => token[0..3], :status_id => DeviceStatus::UNBIND)
+            device = Device.create(:mac => params[:mac].strip, :token => token, :uuid => token[0..3], :status_id => DeviceStatus::BINDED)
           end
           user_device = UserDevice.where(:device => device, :ownership => UserDevice::OWNERSHIP[:super_admin]).first
           unless user_device
