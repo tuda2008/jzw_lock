@@ -29,7 +29,9 @@ class Api::V1::DevicesController < ApplicationController
     respond_to do |format|
       format.json do
         if @device
-          is_admin = @device.is_admin?(@user.id)
+          is_admin = false
+          user_device = UserDevice.where(:device => @device, :user => @user, :ownership => UserDevice::OWNERSHIP[:super_admin]).first
+          is_admin = true if user_device
           has_ble_setting = true
           unless is_admin
             du = BleSetting.where(device_id: @device.id, user_id: @user.id).first
