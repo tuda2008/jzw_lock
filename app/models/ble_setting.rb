@@ -30,10 +30,10 @@ class BleSetting < ApplicationRecord
   before_destroy :disable_user_ble_setting
 
   def enable_user_ble_setting
-    UserDevice.where(:devic_id => self.device_id, :user_id => self.user_id, :visible => true).update_all(has_ble_setting: true)
+    UserDevice.where(:device_id => self.device_id, :user_id => self.user_id, :visible => true).update_all(has_ble_setting: true)
   end
 
-  def enable_user_ble_setting
-    UserDevice.where(:devic_id => self.device_id, :user_id => self.user_id, :visible => true).update_all(has_ble_setting: false)
+  def disable_user_ble_setting
+    UserDevice.where(:device_id => self.device_id, :user_id => self.user_id, :visible => true).update_all(has_ble_setting: false)
   end
 end

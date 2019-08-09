@@ -29,7 +29,7 @@ class Api::V1::BleSettingsController < ApplicationController
       format.json do
         if @ble_setting
           if params[:ble_type].to_i == BleSetting::TYPES[:cycle]
-            data = { ble_type: params[:ble_type].to_i, cycle: params[:cycle].blank? ? [] : params[:cycle],
+            data = { ble_type: params[:ble_type].to_i, cycle: params[:cycle].blank? ? [] : params[:cycle].split(",").map(&:to_i),
                      cycle_start_at: params[:cycle_start_at].blank? ? nil :  params[:cycle_start_at],
                      cycle_end_at: params[:cycle_end_at].blank? ? nil :  params[:cycle_end_at],
                      start_at: nil,
@@ -55,7 +55,7 @@ class Api::V1::BleSettingsController < ApplicationController
         else
           @ble_setting = BleSetting.new(user_id: @user.id, device_id: @device.id, ble_type: params[:ble_type].to_i)
           if params[:ble_type].to_i == BleSetting::TYPES[:cycle]
-            @ble_setting.cycle = params[:cycle]
+            @ble_setting.cycle = params[:cycle].split(",").map(&:to_i)
             @ble_setting.cycle_start_at = params[:cycle_start_at]
             @ble_setting.cycle_end_at = params[:cycle_end_at]
           elsif params[:ble_type].to_i == BleSetting::TYPES[:duration]
@@ -74,7 +74,7 @@ class Api::V1::BleSettingsController < ApplicationController
   end
 
   def destroy
-    @ble_setting = BleSetting.where(id: params[:id], user_id: @user.id, device_id: @device.id).first
+    @ble_setting = BleSetting.where(user_id: @user.id, device_id: @device.id).first
     respond_to do |format|
       format.json do
         if @ble_setting
@@ -89,7 +89,7 @@ class Api::V1::BleSettingsController < ApplicationController
  
   private
     def find_user
-      @user = User.find_by(user_id: params[:user_id])
+      @user = User.find_by(id: params[:user_id])
     end
 
     def find_device
