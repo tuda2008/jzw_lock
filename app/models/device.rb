@@ -43,6 +43,7 @@ class Device < ApplicationRecord
   has_many :sys_notifiers
 
   validates :alias, length: { in: 1..10 }
+  validates :mac, length: { in: 12..40 }
 
   def name
     self.alias
