@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_07_17_141603) do
+ActiveRecord::Schema.define(version: 2019_08_08_091603) do
 
   create_table "active_admin_comments", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
     t.string "namespace"
@@ -70,12 +70,15 @@ ActiveRecord::Schema.define(version: 2019_07_17_141603) do
   create_table "ble_settings", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
     t.integer "user_id", null: false
     t.integer "device_id", null: false
+    t.integer "ble_type", null: false
     t.string "cycle"
-    t.datetime "start_at", null: false
-    t.datetime "end_at", null: false
+    t.string "cycle_start_at"
+    t.string "cycle_end_at"
+    t.datetime "start_at"
+    t.datetime "end_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["user_id", "device_id", "cycle"], name: "index_ble_settings_on_user_device_cycle"
+    t.index ["user_id", "device_id", "ble_type"], name: "index_ble_settings_on_user_device_type"
     t.index ["user_id", "device_id"], name: "index_ble_settings_on_user_device"
   end
 
