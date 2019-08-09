@@ -1,0 +1,2 @@
+class BleSettingsController < ApplicationController
+end
