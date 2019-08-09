@@ -138,7 +138,7 @@ class Api::V1::DevicesController < ApplicationController
     respond_to do |format|
       format.json do
         if @device
-          @device.update_attribute(:alias, params[:name].strip)
+          @device.update_attributes({:alias => params[:name].strip, :status_id => DeviceStatus::BINDED})
           render json: { status: 1, message: "ok", data: { name: params[:name].strip } } 
         else
           render json: { status: 0, message: "no recored yet" } 
