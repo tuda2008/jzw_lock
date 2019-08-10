@@ -352,7 +352,7 @@ class Api::V1::DevicesController < ApplicationController
         if user_device.ownership!=UserDevice::OWNERSHIP[:user]
           is_admin = true
           has_ble_setting = true
-          enable_open = true
+          ble_status = BleSetting::STATUSES[:enable]
         else
           has_ble_setting = user_device.has_ble_setting
           if has_ble_setting
