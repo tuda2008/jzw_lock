@@ -365,8 +365,10 @@ class Api::V1::DevicesController < ApplicationController
               elsif du.ble_type== BleSetting::TYPES[:duration]
                 if now >= du.start_at && now <= du.end_at
                   ble_status = BleSetting::STATUSES[:enable]
-                elsif now < du.start_at
+                elsif now > du.end_at
                   ble_status = BleSetting::STATUSES[:expire]
+                elsif now < du.start_at
+                  ble_status = BleSetting::STATUSES[:disable]
                 end
               elsif du.ble_type== BleSetting::TYPES[:forever]
                 ble_status = BleSetting::STATUSES[:enable]

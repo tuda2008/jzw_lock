@@ -19,16 +19,38 @@ class Api::V1::UsersController < ApplicationController
   def index
     page = params[:page].blank? ? 1 : params[:page].to_i
     datas = []
-    users = User.select("users.id, users.nickname, users.mobile, users.avatar_url, user_devices.ownership, 
+    users = User.select("users.id, users.nickname, users.mobile, users.avatar_url, ble_settings.*, user_devices.ownership, 
       user_devices.finger_count, user_devices.password_count, user_devices.card_count, user_devices.temp_pwd_count, user_devices.has_ble_setting")
-    .joins(:user_devices).where("user_devices.device_id=? and user_devices.visible=true and (user_devices.author_id=? or user_devices.user_id=?)", @device.id, @user.id, @user.id)
+    .joins(:user_devices)
+    .jions("left join ble_settings on ble_settings.user_id=user_devices.user_id and ble_settings.device_id=user_devices.device_id")
+    .where("user_devices.device_id=? and user_devices.visible=true and (user_devices.author_id=? or user_devices.user_id=?)", @device.id, @user.id, @user.id)
     .order("user_devices.ownership desc").page(page).per(10)
+    now = Time.now
+    wday = now.wday
     users.each do |user|
       total_count = user.finger_count + user.password_count + user.card_count + user.temp_pwd_count
+      content = total_count==0 && !user.has_ble_setting ? "尚未添加任何使用权限" : ""
+      if user.ble_type==BleSetting::TYPES[:forever]
+        content = "蓝牙永久权限"
+      elsif user.ble_type==BleSetting::TYPES[:duration]
+        if now >= du.start_at && now <= du.end_at
+          content = "蓝牙生效中"
+        elsif now < du.start_at
+          content = "蓝牙未生效"
+        elsif now > du.end_at
+          content = "蓝牙已过期"
+        end
+      elsif user.ble_type==BleSetting::TYPES[:cycle]
+        if user.cycle.include?(wday) && (now.strftime('%H:%M') >= user.cycle_start_at) && (now.strftime('%H:%M') <= user.cycle_end_at)
+          content = "蓝牙生效中"
+        else
+          content = "蓝牙未生效"
+        end
+      end
       datas << { id: user.id, name: user.nickname, mobile: user.mobile, avatar_url: user.avatar_url.blank? ? "" : user.avatar_url, is_admin: user.ownership!=UserDevice::OWNERSHIP[:user], 
         finger_count: user.finger_count, password_count: user.password_count, card_count: user.card_count,
         temp_pwd_count: user.temp_pwd_count, has_ble_setting: user.has_ble_setting, 
-        content: total_count==0 && !user.has_ble_setting ? "尚未添加任何使用权限" : "" }
+        content: content }
     end
     respond_to do |format|
       format.json do
@@ -337,8 +359,10 @@ class Api::V1::UsersController < ApplicationController
               elsif du.ble_type== BleSetting::TYPES[:duration]
                 if now >= du.start_at && now <= du.end_at
                   ble_status = BleSetting::STATUSES[:enable]
-                elsif now < du.start_at
+                elsif now > du.end_at
                   ble_status = BleSetting::STATUSES[:expire]
+                elsif now < du.start_at
+                  ble_status = BleSetting::STATUSES[:disable]
                 end
               elsif du.ble_type== BleSetting::TYPES[:forever]
                 ble_status = BleSetting::STATUSES[:enable]
