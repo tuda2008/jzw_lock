@@ -29,21 +29,15 @@ class Api::V1::DevicesController < ApplicationController
     respond_to do |format|
       format.json do
         if @device
-          is_admin = false
-          user_device = UserDevice.where(:device => @device, :user => @user, :ownership => UserDevice::OWNERSHIP[:super_admin]).first
-          is_admin = true if user_device
-          has_ble_setting = true
-          unless is_admin
-            du = BleSetting.where(device_id: @device.id, user_id: @user.id).first
-            has_ble_setting = false if du.nil?
-          end
+          is_admin, has_ble_setting, enable_open = is_can_open_lock
           data = { id: @device.id, name: @device.alias,
                    mac: @device.mac, token: @device.token,
                    status_id: @device.status_id, uuid: @device.uuid,
                    open_num: @device.open_num, low_qoe: @device.low_qoe,
-                   is_admin: is_admin, 
                    imei: @device.imei,
+                   is_admin: is_admin,
                    has_ble_setting: has_ble_setting,
+                   enable_open: enable_open,
                    created_at: @device.created_at.strftime('%Y-%m-%d') }
           render json: { status: 1, message: "ok", data: data } 
         else
@@ -344,5 +338,41 @@ class Api::V1::DevicesController < ApplicationController
 
     def find_device
       @device = Device.joins(:user_devices).where(:user_devices => { user_id: @user.id }, :devices => { id: params[:device_id] }).first
+    end
+
+    def is_can_open_lock
+      is_admin = false
+      has_ble_setting = false
+      enable_open = false
+      now = Time.now
+      wday = now.wday
+
+      user_device = UserDevice.where(:device => @device, :user => @user, :visible => true).first
+      if user_device
+        if user_device.ownership!=UserDevice::OWNERSHIP[:user]
+          is_admin = true 
+          has_ble_setting = true
+          enable_open = true
+        else
+          has_ble_setting = user.has_ble_setting
+          if has_ble_setting
+            du = BleSetting.where(device_id: @device.id, user_id: @user.id).first
+            unless du.nil?
+              if du.ble_type== BleSetting::TYPES[:cycle]
+                if du.cycle.include?(wday) && (now.strftime('%H:%M') >= du.cycle_start_at) && (now.strftime('%H:%M') <= du.cycle_end_at)
+                  enable_open = true
+                end
+              elsif du.ble_type== BleSetting::TYPES[:duration]
+                if now >= du.start_at && now <= du.end_at
+                  enable_open = true
+                end
+              elsif du.ble_type== BleSetting::TYPES[:forever]
+                enable_open = true
+              end
+            end
+          end
+        end
+      end
+      return is_admin, has_ble_setting, enable_open
     end
 end
