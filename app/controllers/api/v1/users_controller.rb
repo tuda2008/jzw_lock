@@ -44,7 +44,8 @@ class Api::V1::UsersController < ApplicationController
           content = "蓝牙已过期"
         end
       elsif user.ble_type==BleSetting::TYPES[:cycle]
-        if user.cycle.include?(wday) && (now.strftime('%H:%M') >= user.cycle_start_at) && (now.strftime('%H:%M') <= user.cycle_end_at)
+        weeks = user.cycle.gsub("-", "").gsub("\n", "").split(" ").map(&:to_i)
+        if weeks.include?(wday) && (now.strftime('%H:%M') >= user.cycle_start_at) && (now.strftime('%H:%M') <= user.cycle_end_at)
           content = "蓝牙生效中"
         else
           content = "蓝牙未生效"
