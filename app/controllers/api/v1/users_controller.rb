@@ -19,10 +19,13 @@ class Api::V1::UsersController < ApplicationController
   def index
     page = params[:page].blank? ? 1 : params[:page].to_i
     datas = []
-    users = User.select("users.id, users.nickname, users.mobile, users.avatar_url, ble_settings.*, user_devices.ownership, 
-      user_devices.finger_count, user_devices.password_count, user_devices.card_count, user_devices.temp_pwd_count, user_devices.has_ble_setting")
+    users = User.select("users.id, users.nickname, users.mobile, users.avatar_url, 
+      ble_settings.ble_type, ble_settings.cycle, ble_settings.start_at, ble_settings.end_at,
+      ble_settings.cycle_start_at, ble_settings.cycle_end_at,
+      user_devices.ownership, user_devices.finger_count, user_devices.password_count, 
+      user_devices.card_count, user_devices.temp_pwd_count, user_devices.has_ble_setting")
     .joins(:user_devices)
-    .jions("left join ble_settings on ble_settings.user_id=user_devices.user_id and ble_settings.device_id=user_devices.device_id")
+    .joins("left join ble_settings on ble_settings.user_id=user_devices.user_id and ble_settings.device_id=user_devices.device_id")
     .where("user_devices.device_id=? and user_devices.visible=true and (user_devices.author_id=? or user_devices.user_id=?)", @device.id, @user.id, @user.id)
     .order("user_devices.ownership desc").page(page).per(10)
     now = Time.now
