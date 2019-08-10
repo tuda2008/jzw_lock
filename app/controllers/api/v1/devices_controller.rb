@@ -354,7 +354,7 @@ class Api::V1::DevicesController < ApplicationController
           has_ble_setting = true
           enable_open = true
         else
-          has_ble_setting = user.has_ble_setting
+          has_ble_setting = user_device.has_ble_setting
           if has_ble_setting
             du = BleSetting.where(device_id: device.id, user_id: user.id).first
             unless du.nil?
