@@ -36,11 +36,11 @@ class Api::V1::UsersController < ApplicationController
       if user.ble_type==BleSetting::TYPES[:forever]
         content = "蓝牙永久权限"
       elsif user.ble_type==BleSetting::TYPES[:duration]
-        if now >= du.start_at && now <= du.end_at
+        if now >= user.start_at && now <= user.end_at
           content = "蓝牙生效中"
-        elsif now < du.start_at
+        elsif now < user.start_at
           content = "蓝牙未生效"
-        elsif now > du.end_at
+        elsif now > user.end_at
           content = "蓝牙已过期"
         end
       elsif user.ble_type==BleSetting::TYPES[:cycle]
