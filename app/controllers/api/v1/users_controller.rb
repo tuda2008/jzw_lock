@@ -41,7 +41,7 @@ class Api::V1::UsersController < ApplicationController
     page = params[:page].blank? ? 1 : params[:page].to_i
     user = User.select("users.id, users.nickname, users.mobile, users.avatar_url, user_devices.ownership").joins(:user_devices).where(:id => params[:id], :user_devices => { device_id: @device.id }).first
     users = DeviceUser.where("device_id=? and user_id=?", @device.id, user.id).page(page).per(10)
-    is_admin, has_ble_setting, enable_open = is_can_open_lock(@device, user)
+    is_admin, has_ble_setting, ble_status = is_can_open_lock(@device, user)
     result = []
     users.each do |user|
       result << { id: user.id, type: user.device_type, num: user.device_num, username: user.username }
@@ -49,7 +49,7 @@ class Api::V1::UsersController < ApplicationController
     datas = { id: user.id, name: user.nickname, mobile: user.mobile, 
       avatar_url: user.avatar_url.blank? ? "" : user.avatar_url,
       is_admin: user.ownership != UserDevice::OWNERSHIP[:user],
-      has_ble_setting: has_ble_setting, enable_open: enable_open }
+      has_ble_setting: has_ble_setting, ble_status: ble_status }
     respond_to do |format|
       format.json do
         render json: { status: 1, message: "ok", data: datas, users: result, total_pages: users.total_pages, current_page: page }
@@ -315,14 +315,14 @@ class Api::V1::UsersController < ApplicationController
     def is_can_open_lock(device, user)
       is_admin = false
       has_ble_setting = false
-      enable_open = false
+      ble_status = BleSetting::STATUSES[:disable]
       now = Time.now
       wday = now.wday
 
       user_device = UserDevice.where(:device => device, :user => user, :visible => true).first
       if user_device
         if user_device.ownership!=UserDevice::OWNERSHIP[:user]
-          is_admin = true 
+          is_admin = true
           has_ble_setting = true
           enable_open = true
         else
@@ -332,19 +332,21 @@ class Api::V1::UsersController < ApplicationController
             unless du.nil?
               if du.ble_type== BleSetting::TYPES[:cycle]
                 if du.cycle.include?(wday) && (now.strftime('%H:%M') >= du.cycle_start_at) && (now.strftime('%H:%M') <= du.cycle_end_at)
-                  enable_open = true
+                  ble_status = BleSetting::STATUSES[:enable]
                 end
               elsif du.ble_type== BleSetting::TYPES[:duration]
                 if now >= du.start_at && now <= du.end_at
-                  enable_open = true
+                  ble_status = BleSetting::STATUSES[:enable]
+                elsif now < du.start_at
+                  ble_status = BleSetting::STATUSES[:expire]
                 end
               elsif du.ble_type== BleSetting::TYPES[:forever]
-                enable_open = true
+                ble_status = BleSetting::STATUSES[:enable]
               end
             end
           end
         end
       end
-      return is_admin, has_ble_setting, enable_open
+      return is_admin, has_ble_setting, ble_status
     end
 end

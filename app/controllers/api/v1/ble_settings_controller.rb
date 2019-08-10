@@ -12,8 +12,8 @@ class Api::V1::BleSettingsController < ApplicationController
                    cycle: @ble_setting.cycle.nil? ? [] : @ble_setting.cycle,
                    cycle_start_at: @ble_setting.cycle_start_at.nil? ? "" : @ble_setting.cycle_start_at,
                    cycle_end_at: @ble_setting.cycle_end_at.nil? ? "" : @ble_setting.cycle_end_at,
-                   start_at: @ble_setting.start_at.nil? ? "" : @ble_setting.start_at,
-                   end_at: @ble_setting.end_at.nil? ? "" : @ble_setting.end_at
+                   start_at: @ble_setting.start_at.nil? ? "" : @ble_setting.start_at.strftime('%Y-%m-%d %H:%M:%S'),
+                   end_at: @ble_setting.end_at.nil? ? "" : @ble_setting.end_at.strftime('%Y-%m-%d %H:%M:%S')
                   }
           render json: { status: 1, message: "ok", data: data }
         else
