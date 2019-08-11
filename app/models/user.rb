@@ -24,6 +24,8 @@
 
 class User < ApplicationRecord
   YUNPIAN_API_KEY = ""
+  WECHAT_APP_ID = ""
+  WECHAT_APP_SECRET = ""
   PROVIDERS = { wechat: 1, qq: 2 }
   PROVIDER_COLLECTION = [["wechat", 1], ["qq", 2]]
   PROVIDER_HASH = { 1 => "wechat", 2 => "qq" }
@@ -61,7 +63,7 @@ class User < ApplicationRecord
 
   def self.reload_token
     begin
-      response = RestClient.get("https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=#{ENV["WECHAT_APP_ID"]}&secret=#{ENV["WECHAT_APP_SECRET"]}", timeout: 2)
+      response = RestClient.get("https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=#{WECHAT_APP_ID}&secret=#{WECHAT_APP_SECRET}", timeout: 2)
       @weixin_token = JSON.parse(response.body)["access_token"]
       @wx_token_expires_in = Time.now + JSON.load(response.body)["expires_in"]
     rescue => e
@@ -88,7 +90,7 @@ class User < ApplicationRecord
 
   def self.find_or_create_by_wechat(code)
     return nil unless code
-    wechat_request_url = "https://api.weixin.qq.com/sns/jscode2session?appid=#{ENV["WECHAT_APP_ID"]}&secret=#{ENV["WECHAT_APP_SECRET"]}&js_code=#{code}&grant_type=authorization_code"
+    wechat_request_url = "https://api.weixin.qq.com/sns/jscode2session?appid=#{WECHAT_APP_ID}&secret=#{WECHAT_APP_SECRET}&js_code=#{code}&grant_type=authorization_code"
     begin
       response = RestClient.post(wechat_request_url, timeout: 2)
       open_id = JSON.load(response.body)["openid"]
