@@ -6,17 +6,14 @@ class Api::V1::DevicesController < ApplicationController
   def index
     page = params[:page].blank? ? 1 : params[:page].to_i
     datas = []
-    @devices = Device.joins(:user_devices).joins("inner join users on users.id=user_devices.author_id").select("devices.*, users.nickname, user_devices.ownership")
-    .where(:status_id => DeviceStatus::BINDED).where("user_id=? and visible=true", @user.id)
-    .order("user_devices.ownership").page(page).per(10)
+    @devices = Device.devices_by_user(@user, page, 10)
     @devices.each do |dv|
-      datas << { id: dv.id,
+      datas << { id: dv.id, token: dv.token,
                  uuid: dv.uuid, name: dv.alias,
                  status_id: dv.status_id,
                  mac: dv.mac,
                  admin_name: dv.nickname,
-                 is_admin: dv.ownership!=UserDevice::OWNERSHIP[:user], 
-                 token: dv.token }
+                 is_admin: dv.ownership!=UserDevice::OWNERSHIP[:user] }
     end
     respond_to do |format|
       format.json do

@@ -80,4 +80,11 @@ class Device < ApplicationRecord
     .select("distinct users.id, users.nickname, users.avatar_url")
     .where("it.device_id=? and it.user_id=?", self.id, user_id)
   end
+
+  def self.devices_by_user(user, page, per_page)
+    Device.joins(:user_devices).joins("inner join users on users.id=user_devices.author_id")
+    .select("devices.*, users.nickname, user_devices.ownership")
+    .where(:status_id => DeviceStatus::BINDED).where("user_id=? and visible=true", user.id)
+    .order("user_devices.ownership").page(page).per(per_page)
+  end
 end
