@@ -44,7 +44,7 @@ class Api::V1::UsersController < ApplicationController
           end
         end
       else
-        content = total_count==0 "尚未添加任何使用权限" : ""
+        content = total_count==0 ? "尚未添加任何使用权限" : ""
       end
       datas << { id: user.id, name: user.nickname, mobile: user.mobile, avatar_url: user.avatar_url.blank? ? "" : user.avatar_url, is_admin: user.ownership!=UserDevice::OWNERSHIP[:user], 
         finger_count: user.finger_count, password_count: user.password_count, card_count: user.card_count,
