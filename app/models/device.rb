@@ -87,4 +87,22 @@ class Device < ApplicationRecord
     .where(:status_id => DeviceStatus::BINDED).where("user_id=? and visible=true", user.id)
     .order("user_devices.ownership").page(page).per(per_page)
   end
+
+  def remove_relevant_collections
+    self.update_attribute(:status_id, DeviceStatus::UNBIND)
+    users = User.joins(:user_devices).where(:user_devices => { visible: true, device_id: self.id })
+    users.each do |user|
+      user.decrement(:device_count)
+    end
+    UserDevice.where(:device => self).each do |ud|
+      ud.destroy
+    end
+    Message.where(:device_id => self.id).update_all(is_deleted: true)
+    DeviceUser.where(:device_id => self.id).each do |du|
+      du.destroy
+    end
+    BleSetting.where(:device_id => self.id).each do |bs|
+      bs.destroy
+    end
+  end
 end
