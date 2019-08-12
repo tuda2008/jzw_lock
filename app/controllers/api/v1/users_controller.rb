@@ -57,14 +57,15 @@ class Api::V1::UsersController < ApplicationController
 
   def show
     page = params[:page].blank? ? 1 : params[:page].to_i
-    user = User.select("users.id, users.nickname, users.mobile, users.avatar_url, user_devices.ownership").joins(:user_devices).where(:id => params[:id], :user_devices => { device_id: @device.id }).first
+    user = User.select("users.id, users.open_id, users.nickname, users.mobile, users.avatar_url, user_devices.ownership").joins(:user_devices).where(:id => params[:id], :user_devices => { device_id: @device.id }).first
     users = DeviceUser.where("device_id=? and user_id=?", @device.id, user.id).page(page).per(10)
     is_admin, has_ble_setting, ble_status = is_can_open_lock(@device, user)
     result = []
     users.each do |user|
       result << { id: user.id, type: user.device_type, num: user.device_num, username: user.username }
     end
-    datas = { id: user.id, name: user.nickname, mobile: user.mobile, 
+    datas = { id: user.id, name: user.nickname, mobile: user.mobile,
+      binded: !user.open_id.blank?,
       avatar_url: user.avatar_url.blank? ? "" : user.avatar_url,
       is_admin: user.ownership != UserDevice::OWNERSHIP[:user],
       has_ble_setting: has_ble_setting, ble_status: ble_status }

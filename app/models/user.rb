@@ -42,7 +42,7 @@ class User < ApplicationRecord
 
   has_many :messages, :dependent => :destroy
 
-  validates :mobile, :open_id, uniqueness: { case_sensitive: false }
+  validates :mobile, :open_id, uniqueness: { case_sensitive: false, allow_blank: true }
 
   scope :male, -> { where(gender: 1) }
   scope :female, -> { where(gender: 2) }
