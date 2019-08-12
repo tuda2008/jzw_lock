@@ -94,24 +94,13 @@ class Api::V1::DevicesController < ApplicationController
           user_device = UserDevice.where(:user => @user, :device => @device).first
           Device.transaction do
             if user_device.is_admin?
-              users = User.joins(:user_devices).where(:user_devices => { visible: true, device_id: @device.id })
-              users.each do |user|
-                user.update_attribute(:device_count, user.device_count-1)
-              end
-              @device.update_attribute(:status_id, DeviceStatus::UNBIND)
-              Message.where(:device_id => @device.id).update_all(is_deleted: true)
-              DeviceUser.where(:device_id => @device.id).each do |du|
-                du.destroy
-              end
-              UserDevice.where(:device => @device).each do |ud|
-                ud.destroy
-              end
+              user_device.remove_relevant_collections
             else
               total_count = user_device.finger_count + user_device.password_count + user_device.card_count + user_device.temp_pwd_count
               if total_count>0 || user_device.has_ble_setting
                 render json: { status: 0, message: "请联系管理员先删除指纹、密码等设置后再删除" } and return
               else
-                @user.update_attribute(:device_count, @user.device_count-1)
+                @user.decrement(:device_count)
                 DeviceUser.where(:device_id => @device.id, :user_id => @user.id).each do |du|
                   du.destroy
                 end

@@ -34,11 +34,23 @@ class UserDevice < ApplicationRecord
   scope :visible, -> { where(visible: true) }
   scope :invisible, -> { where(visible: false) }
 
-  before_destroy :soft_remove_messages
-
-  def soft_remove_messages
-    if self.ownership == OWNERSHIP[:user]
-      Message.where(user_id: self.user_id, device_id: self.device_id).update_all(is_deleted: true)
+  def remove_relevant_collections
+    if self.is_admin?
+      users = User.joins(:user_devices).where(:user_devices => { visible: true, device_id: self.device_id })
+      users.each do |user|
+        user.decrement(:device_count)
+      end
+      Message.where(:device_id => self.device_id).update_all(is_deleted: true)
+      Device.where(:id => self.device_id).update_all(status_id: DeviceStatus::UNBIND)
+      DeviceUser.where(:device_id => self.device_id).each do |du|
+        du.destroy
+      end
+      UserDevice.where(:device_id => self.device_id).each do |ud|
+        ud.destroy
+      end
+      BleSetting.where(:device_id => self.device_id).each do |bs|
+        bs.destroy
+      end
     end
   end
 
