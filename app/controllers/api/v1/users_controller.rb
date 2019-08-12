@@ -298,7 +298,7 @@ class Api::V1::UsersController < ApplicationController
             @user.save
             render json: { status: 1, message: "ok" }
           else
-            render json: { status: 0, message: @user.errors.messages[:mobile] } 
+            render json: { status: 0, message: @user.errors.full_messages.to_sentence } 
           end
         else
           render json: { status: 0, message: "没用找到用户" }
