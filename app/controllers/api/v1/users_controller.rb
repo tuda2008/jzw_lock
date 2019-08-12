@@ -8,7 +8,10 @@ class Api::V1::UsersController < ApplicationController
     respond_to do |format|
       format.json do
         if user
-          render json: { status: 1, message: "ok", data: { openid: user.open_id, user_id: user.id, mobile: user.mobile.blank? ? "" : user.mobile, device_num: user.device_count } }
+          device_id = ""
+          ud = UserDevice.where(:user_id => user.id, :visible => true).first
+          device_id = ud.device_id unless ud.nil?
+          render json: { status: 1, message: "ok", data: { openid: user.open_id, user_id: user.id, mobile: user.mobile.blank? ? "" : user.mobile, device_num: user.device_count, device_id: device_id } }
         else
           render json: { status: 0, message: "授权失败" }
         end
@@ -114,9 +117,12 @@ class Api::V1::UsersController < ApplicationController
     respond_to do |format|
       format.json do
         if @user
+          device_id = ""
+          ud = UserDevice.where(:user_id => @user.id, :visible => true).first
+          device_id = ud.device_id unless ud.nil?
           @user.update_attributes({:country => params[:country], :province => params[:province], :city => params[:city],
             :nickname => params[:nickName], :gender => params[:gender], :avatar_url => params[:avatarUrl]})
-          render json: { status: 1, message: "ok", user_id: @user.id, device_num: @user.device_count }
+          render json: { status: 1, message: "ok", user_id: @user.id, device_num: @user.device_count, device_id: device_id }
         else
           render json: { status: 0, message: "更新用户信息失败" }
         end
