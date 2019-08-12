@@ -23,8 +23,8 @@ class Api::V1::UsersController < ApplicationController
     now = Time.now
     wday = now.wday
     users.each do |user|
-      total_count = user.finger_count + user.password_count + user.card_count + user.temp_pwd_count
-      if user.has_ble_setting
+      total_count = user.finger_count.to_i + user.password_count.to_i + user.card_count.to_i + user.temp_pwd_count.to_i
+      if user.has_ble_setting.to_i>0
         if user.ble_type==BleSetting::TYPES[:forever]
           content = "蓝牙永久权限"
         elsif user.ble_type==BleSetting::TYPES[:duration]
@@ -280,6 +280,26 @@ class Api::V1::UsersController < ApplicationController
         if @user
           @user.update_attribute(:nickname, params[:name].strip)
           render json: { status: 1, message: "ok" }
+        else
+          render json: { status: 0, message: "没用找到用户" }
+        end
+      end
+    end
+  end
+
+  def update_mobile_and_name
+    @user = User.find(params[:user_id])
+    respond_to do |format|
+      format.json do
+        if @user
+          @user.nickname = params[:username].strip
+          @user.mobile = params[:mobile].strip
+          if @user.valid?
+            @user.save
+            render json: { status: 1, message: "ok" }
+          else
+            render json: { status: 0, message: @user.errors.messages[:mobile] } 
+          end
         else
           render json: { status: 0, message: "没用找到用户" }
         end
