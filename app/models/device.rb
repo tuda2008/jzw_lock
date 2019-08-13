@@ -92,7 +92,7 @@ class Device < ApplicationRecord
     self.update_attribute(:status_id, DeviceStatus::UNBIND)
     users = User.joins(:user_devices).where(:user_devices => { visible: true, device_id: self.id })
     users.each do |user|
-      user.decrement(:device_count)
+      user.decrement_counter(:device_count)
     end
     UserDevice.where(:device => self).each do |ud|
       ud.destroy
