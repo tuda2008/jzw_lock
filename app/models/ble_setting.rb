@@ -17,7 +17,7 @@
 
 class BleSetting < ApplicationRecord
   TYPES = { cycle: 1, duration: 2, forever: 3 }
-  STATUSES = { disable: 1, enable: 2, expire: 3 }
+  STATUSES = { disable: 1, enable: 2, expire: 3, forever: 4 }
 
   serialize :cycle, Array
 

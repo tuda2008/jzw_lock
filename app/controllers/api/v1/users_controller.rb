@@ -391,7 +391,7 @@ class Api::V1::UsersController < ApplicationController
                   ble_status = BleSetting::STATUSES[:disable]
                 end
               elsif du.ble_type== BleSetting::TYPES[:forever]
-                ble_status = BleSetting::STATUSES[:enable]
+                ble_status = BleSetting::STATUSES[:forever]
               end
             end
           end
