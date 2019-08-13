@@ -62,7 +62,6 @@ class Api::V1::DevicesController < ApplicationController
             else
               ud.update_attributes({:author_id => @user.id, :visible => true, :ownership => UserDevice::OWNERSHIP[:super_admin]})
             end
-            @user.update_attribute(:device_count, @user.device_count+1)
             is_admin = true
           else
             #if device.status_id == DeviceStatus::UNBIND
@@ -73,7 +72,7 @@ class Api::V1::DevicesController < ApplicationController
               render json: { status: 0, message: "亲，设备已被绑定", data: {} } and return
             else
               unless ud.visible
-                @user.update_attribute(:device_count, @user.device_count+1)
+                @user.increment!(:device_count)
                 ud.update_attribute(:visible, true)
               else
                 render json: { status: 2, message: "亲，您已经绑定过该设备了", data: { id: device.id, mac: device.mac, uuid: device.uuid, is_admin: is_admin } } and return
@@ -100,7 +99,6 @@ class Api::V1::DevicesController < ApplicationController
               if total_count>0 || user_device.has_ble_setting
                 render json: { status: 0, message: "请联系管理员先删除指纹、密码等设置后再删除" } and return
               else
-                @user.decrement(:device_count)
                 DeviceUser.where(:device_id => @device.id, :user_id => @user.id).each do |du|
                   du.destroy
                 end

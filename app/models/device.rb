@@ -90,11 +90,6 @@ class Device < ApplicationRecord
 
   def remove_relevant_collections
     self.update_attribute(:status_id, DeviceStatus::UNBIND)
-    users = User.joins(:user_devices).where(:user_devices => { visible: true, device_id: self.id })
-    users.each do |user|
-      user.device_count = user.device_count -1 
-      user.save
-    end
     UserDevice.where(:device => self).each do |ud|
       ud.destroy
     end

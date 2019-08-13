@@ -19,7 +19,7 @@ class UserDevice < ApplicationRecord
   OWNERSHIP = { user: 1, admin: 2, super_admin: 3 }
   MAX_ADMIN_LIMIT = 3
 
-  belongs_to :user
+  belongs_to :user, :counter_cache => :device_count
   belongs_to :device
   belongs_to :author, foreign_key: :author_id, class_name: :User
   belongs_to :super_admin, foreign_key: :user_id, class_name: :User
@@ -36,11 +36,6 @@ class UserDevice < ApplicationRecord
 
   def remove_relevant_collections
     if self.is_admin?
-      users = User.joins(:user_devices).where(:user_devices => { visible: true, device_id: self.device_id })
-      users.each do |user|
-        user.device_count = user.device_count -1 
-        user.save
-      end
       Message.where(:device_id => self.device_id).update_all(is_deleted: true)
       Device.where(:id => self.device_id).update_all(status_id: DeviceStatus::UNBIND)
       DeviceUser.where(:device_id => self.device_id).each do |du|

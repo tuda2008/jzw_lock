@@ -105,7 +105,6 @@ class Api::V1::UsersController < ApplicationController
             else
               UserDevice.create(:author_id => @user.id, :user_id => user.id, :device_id => @device.id, :ownership => UserDevice::OWNERSHIP[:user], :visible => true)
             end
-            user.update_attribute(:device_count, user.device_count+1)
             render json: { status: 1, message: "ok" }
           end 
         end
