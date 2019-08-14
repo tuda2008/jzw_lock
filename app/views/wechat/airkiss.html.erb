@@ -9,12 +9,12 @@
 
 <script>
     wx.config({
-        debug: false,
+        debug: true,
         beta : true,
-        appId: '',
-        timestamp: '',
-        nonceStr: '',
-        signature: '',
+        appId: '<%= @wechat_app_id %>',
+        timestamp: '<%= @timestamp %>',
+        nonceStr: '<%= @uuid %>',
+        signature: '<%= @signature %>',
         jsApiList: ["configWXDeviceWiFi"]
     });
     wx.error(function (res) {
@@ -22,8 +22,6 @@
     });
     var config = function () {
         console.log("config called")
-
-        
         wx.checkJsApi({
             jsApiList: ['configWXDeviceWiFi'], // 需要检测的JS接口列表，所有JS接口列表见附录2,
             success: function (res) {

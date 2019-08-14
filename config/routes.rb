@@ -11,7 +11,6 @@ Rails.application.routes.draw do
   resources :faqs, only: [:index, :show]
   get 'wechat/airkiss', to: 'wechat#airkiss'
   get 'wechat/check_token', to: 'wechat#check_token'
-  get 'wechat/get_token', to: 'wechat#get_token'
 
   namespace :api do
     namespace :v1 do
