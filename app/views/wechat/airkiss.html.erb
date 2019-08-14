@@ -1,0 +1,36 @@
+<%= javascript_include_tag 'http://res.wx.qq.com/open/js/jweixin-1.0.0.js' %>
+
+<button style="height:20px;width:100px;" onclick="config()"> airkiss </button>
+
+<script>
+    wx.config({
+        debug: false,
+        beta : true,
+        appId: '',
+        timestamp: '',
+        nonceStr: '',
+        signature: '',
+        jsApiList: ["configWXDeviceWiFi"]
+    });
+    wx.error(function (res) {
+      cosnole.log("res", res)
+    });
+    var config = function () {
+        console.log("config called")
+        wx.checkJsApi({
+            jsApiList: ['configWXDeviceWiFi'], // 需要检测的JS接口列表，所有JS接口列表见附录2,
+            success: function (res) {
+                // 以键值对的形式返回，可用的api值true，不可用为false
+                // 如：{"checkResult":{"chooseImage":true},"errMsg":"checkJsApi:ok"}
+                wx.invoke('configWXDeviceWiFi', {}, function (res) {
+                    if (res.err_msg == 'configWXDeviceWiFi:ok') {
+                        alert('配置成功!');
+                        wx.closeWindow();
+                    } else {
+                        alert('配置失败！请重试');
+                    }
+                });
+            }
+        });
+    }
+</script>

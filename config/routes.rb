@@ -6,7 +6,11 @@ Rails.application.routes.draw do
   mount Sidekiq::Web => '/sidekiq'
   Sidekiq::Web.set :session_secret, Rails.application.credentials[:secret_key_base]
 
-  root to: "admin/brands#index"
+  root to: 'admin/brands#index'
+ 
+  resources :faqs, only: [:index, :show]
+  get 'wechat/get_token', to: 'wechat#get_token'
+  get 'wechat/airkiss', to: 'wechat#airkiss'
 
   namespace :api do
     namespace :v1 do
