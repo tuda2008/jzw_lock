@@ -2,8 +2,10 @@ class WechatController < ApplicationController
   skip_before_action :verify_authenticity_token
 
   def get_token
-  	begin
-      response = RestClient.get("https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=#{WECHAT_APP_ID}&secret=#{WECHAT_APP_SECRET}", timeout: 2)
+    wechat_app_id = ""
+    wechat_app_secret = ""
+    begin
+      response = RestClient.get("https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=#{wechat_app_id}&secret=#{wechat_app_secret}", timeout: 2)
       @weixin_token = JSON.parse(response.body)["access_token"]
       @wx_token_expires_in = Time.now + JSON.load(response.body)["expires_in"]
     rescue => e
@@ -11,7 +13,13 @@ class WechatController < ApplicationController
     end
   end
 
-	def airkiss
+  def check_token
+    respond_to do |format|
+      format.html { render :layout => false, :text => "hello" }
+    end
+  end
 
-	end
+  def airkiss
+
+  end
 end
