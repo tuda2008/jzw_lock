@@ -1,6 +1,11 @@
 <%= javascript_include_tag 'http://res.wx.qq.com/open/js/jweixin-1.0.0.js' %>
 
-<button style="height:20px;width:100px;" onclick="config()"> airkiss </button>
+<div style="width:100%;display:flex;align-items:center;flex-direction:column;justify-content:center;">
+  <button style="height:40px;width:100px;margin-top:100px;" onclick="config()"> airkiss </button>
+
+  <p style="margin-top:20px;" class="error1"></p>
+  <p class="error2"></p>
+</div>
 
 <script>
     wx.config({
@@ -13,10 +18,12 @@
         jsApiList: ["configWXDeviceWiFi"]
     });
     wx.error(function (res) {
-      cosnole.log("res", res)
+      $('.error1').html(res);
     });
     var config = function () {
         console.log("config called")
+
+        
         wx.checkJsApi({
             jsApiList: ['configWXDeviceWiFi'], // 需要检测的JS接口列表，所有JS接口列表见附录2,
             success: function (res) {
@@ -27,6 +34,7 @@
                         alert('配置成功!');
                         wx.closeWindow();
                     } else {
+                        $('.error2').html(res.err_msg);
                         alert('配置失败！请重试');
                     }
                 });
