@@ -90,15 +90,15 @@ class Device < ApplicationRecord
 
   def remove_relevant_collections
     self.update_attribute(:status_id, DeviceStatus::UNBIND)
-    UserDevice.where(:device => self).each do |ud|
-      ud.destroy
-    end
     Message.where(:device_id => self.id).update_all(is_deleted: true)
     DeviceUser.where(:device_id => self.id).each do |du|
       du.destroy
     end
     BleSetting.where(:device_id => self.id).each do |bs|
       bs.destroy
+    end
+    UserDevice.where(:device => self).each do |ud|
+      ud.destroy
     end
   end
 end

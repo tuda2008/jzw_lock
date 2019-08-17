@@ -38,14 +38,14 @@ class UserDevice < ApplicationRecord
     if self.is_admin?
       Message.where(:device_id => self.device_id).update_all(is_deleted: true)
       Device.where(:id => self.device_id).update_all(status_id: DeviceStatus::UNBIND)
+      BleSetting.where(:device_id => self.device_id).each do |bs|
+        bs.destroy
+      end
       DeviceUser.where(:device_id => self.device_id).each do |du|
         du.destroy
       end
       UserDevice.where(:device_id => self.device_id).each do |ud|
         ud.destroy
-      end
-      BleSetting.where(:device_id => self.device_id).each do |bs|
-        bs.destroy
       end
     end
   end
