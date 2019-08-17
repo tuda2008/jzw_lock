@@ -14,6 +14,7 @@
       carousel: "展播"
       product: "产品"
       comment: "评论"
+      faq: "帮助"
     attributes:
       admin_user:
         email: "邮箱"
@@ -44,6 +45,11 @@
         intro: "说明"
         brands: "厂家"
         products: "产品"
+        images: "相关图片"
+        visible: "是否可见"
+      faq:
+        title: "标题"
+        content: "内容"
         images: "相关图片"
         visible: "是否可见"
       product:

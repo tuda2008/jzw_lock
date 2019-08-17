@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_08_08_091603) do
+ActiveRecord::Schema.define(version: 2019_08_17_070150) do
 
   create_table "active_admin_comments", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
     t.string "namespace"
@@ -207,6 +207,17 @@ ActiveRecord::Schema.define(version: 2019_08_08_091603) do
     t.index ["token"], name: "index_devices_on_token", unique: true
     t.index ["uuid"], name: "index_devices_on_uuid"
     t.index ["wifi_mac"], name: "index_devices_on_wifi_mac"
+  end
+
+  create_table "faqs", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
+    t.string "title", null: false
+    t.text "content"
+    t.string "images"
+    t.boolean "visible", default: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["title"], name: "index_faqs_on_title"
+    t.index ["visible"], name: "index_faqs_on_visible"
   end
 
   create_table "invitations", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|

@@ -37,6 +37,7 @@ Rails.application.routes.draw do
       resources :devices, only: [:index, :show]
       resources :messages, only: [:index, :show]
       resources :app_versions, only: [:index, :show]
+      resources :faqs, only: [:index, :show]
       resources :sys_notifiers, only: [:index, :show, :create]
     end
   end
