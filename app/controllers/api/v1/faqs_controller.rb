@@ -4,7 +4,7 @@ class Api::V1::FaqsController < ApplicationController
   def index
     page = params[:page].blank? ? 1 : params[:page].to_i
     datas = []
-    @faqs = Message.visible.page(params[:page]).per(10)
+    @faqs = Faq.visible.page(params[:page]).per(10)
     @faqs.each do |faq|
       datas << { id: faq.id, title: faq.title }
     end
@@ -18,7 +18,7 @@ class Api::V1::FaqsController < ApplicationController
   def show
     data = []
     images = []
-    @faq = Message.visible.find(params[:id])
+    @faq = Faq.visible.find(params[:id])
     respond_to do |format|
       format.json do
         if @faq
