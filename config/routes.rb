@@ -8,7 +8,6 @@ Rails.application.routes.draw do
 
   root to: 'admin/brands#index'
  
-  resources :faqs, only: [:index, :show]
   get 'wechat/airkiss', to: 'wechat#airkiss'
   get 'wechat/check_token', to: 'wechat#check_token'
 
