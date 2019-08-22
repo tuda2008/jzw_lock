@@ -5,6 +5,7 @@ ActiveAdmin.register User do
   filter :provider, as: :select, collection: User::PROVIDER_COLLECTION
   filter :nickname
   filter :mobile
+  filter :device_count
   filter :province
   filter :city
   filter :gender, as: :select, collection: User::GENDER_COLLECTION
@@ -23,11 +24,13 @@ ActiveAdmin.register User do
       image_tag(user.avatar_url, size: "48x48") unless user.avatar_url.blank?
     end
     column :mobile
+    column :device_count
     column :province
     column :city
     column :gender do |user|
       User::GENDER_HASH[user.gender]
     end
+
     actions
   end
 
@@ -42,13 +45,11 @@ ActiveAdmin.register User do
         image_tag(user.avatar_url) unless user.avatar_url.blank?
       end
       row :mobile
+      row :device_count
       row :province
       row :city
       row :gender do |user|
         User::GENDER_HASH[user.gender]
-      end
-      row :invitors do |user|
-        user.invitors.map(&:name).join(',')
       end
     end
   end

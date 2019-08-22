@@ -14,7 +14,6 @@ ActiveAdmin.register Device do
   index do
     selectable_column
       id_column
-      column :device_uuid
       column :device_status
       column :alias
       column :imei
@@ -28,7 +27,6 @@ ActiveAdmin.register Device do
   show do
     attributes_table do
       row :id
-      row :device_uuid
       row :device_status
       row :alias
       row :mac
