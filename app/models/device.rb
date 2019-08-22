@@ -45,6 +45,9 @@ class Device < ApplicationRecord
   validates :alias, length: { in: 1..10 }
   validates :mac, length: { in: 12..40 }
 
+  scope :binded, -> { where(status_id: DeviceStatus::BINDED) }
+  scope :unbind, -> { where(status_id: DeviceStatus::UNBIND) }
+
   def name
     self.alias
   end

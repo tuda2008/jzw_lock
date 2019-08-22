@@ -8,6 +8,9 @@ ActiveAdmin.register Device do
   filter :imei
   filter :created_at
 
+  scope("全部A") { |device| device.all }
+  scope("已绑定Y") { |device| device.binded }
+  scope("未绑定N") { |device| device.unbind }
   index do
     selectable_column
       id_column

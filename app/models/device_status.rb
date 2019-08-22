@@ -9,8 +9,8 @@
 #
 
 class DeviceStatus < ApplicationRecord
-	BINDED = 2
-	UNBIND = 1
+  BINDED = 2
+  UNBIND = 1
   belongs_to :category
 
   has_many :devices, foreign_key: :status_id
