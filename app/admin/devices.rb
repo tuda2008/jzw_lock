@@ -28,6 +28,7 @@ ActiveAdmin.register Device do
       row :device_uuid
       row :device_status
       row :alias
+      row :mac
       row :imei
       row :super_admin do |device|
         device.super_admin.nil? ? "" : device.super_admin.name
