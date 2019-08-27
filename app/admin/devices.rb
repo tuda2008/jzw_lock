@@ -21,7 +21,11 @@ ActiveAdmin.register Device do
       	device.super_admin.nil? ? "" : device.super_admin.name
       end
       column :created_at
-    actions
+    actions do |device|
+      if device.status_id==DeviceStatus::BINDED
+        item "重置设备", reset_admin_device_path(device), method: :put, class: "action-division inactive"
+      end
+    end
   end
 
   show do
@@ -45,6 +49,11 @@ ActiveAdmin.register Device do
       end
       row :created_at
     end
+  end
+
+  member_action :reset, method: :put do
+    resource.remove_relevant_collections
+    redirect_to admin_device_path(resource), notice: "已重置成功"
   end
 
 end
