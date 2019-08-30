@@ -89,6 +89,7 @@ class Api::V1::DevicesController < ApplicationController
     respond_to do |format|
       format.json do
         if @device
+          @author = @user
           @user = User.find(params[:user_id]) if params[:user_id]
           user_device = UserDevice.where(:user => @user, :device => @device).first
           Device.transaction do
@@ -97,7 +98,12 @@ class Api::V1::DevicesController < ApplicationController
             else
               total_count = user_device.finger_count + user_device.password_count + user_device.card_count + user_device.temp_pwd_count
               if total_count>0
-                render json: { status: 0, message: "请联系管理员先删除指纹、密码等设置后再删除" } and return
+                ud = UserDevice.where(:user => @author, :device => @device).first
+                if ud.is_admin?
+                  render json: { status: 0, message: "删除成员失败，请重试" } and return
+                else
+                  render json: { status: 0, message: "请联系管理员先删除指纹、密码等设置后再删除" } and return
+                end
               else
                 DeviceUser.where(:device_id => @device.id, :user_id => @user.id).each do |du|
                   du.destroy
