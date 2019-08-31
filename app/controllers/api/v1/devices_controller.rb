@@ -1,7 +1,7 @@
 class Api::V1::DevicesController < ApplicationController
   skip_before_action :verify_authenticity_token
   before_action :find_user
-  before_action :find_device, only: [:show, :unbind, :cmd, :rename, :users]
+  before_action :find_device, only: [:show, :unbind, :cmd, :rename, :users, :update_imei]
 
   def index
     page = params[:page].blank? ? 1 : params[:page].to_i
@@ -12,6 +12,7 @@ class Api::V1::DevicesController < ApplicationController
                  uuid: dv.uuid, name: dv.alias,
                  status_id: dv.status_id,
                  mac: dv.mac,
+                 imei: dv.imei.blank? ? "" : dv.imei,
                  admin_name: dv.nickname,
                  is_admin: dv.ownership!=UserDevice::OWNERSHIP[:user] }
     end
@@ -31,7 +32,7 @@ class Api::V1::DevicesController < ApplicationController
                    mac: @device.mac, token: @device.token,
                    status_id: @device.status_id, uuid: @device.uuid,
                    open_num: @device.open_num, low_qoe: @device.low_qoe,
-                   imei: @device.imei,
+                   imei: @device.imei.blank? ? "" : @device.imei,
                    is_admin: is_admin,
                    has_ble_setting: has_ble_setting,
                    ble_status: ble_status,
@@ -129,6 +130,19 @@ class Api::V1::DevicesController < ApplicationController
         if @device
           @device.update_attributes({:alias => params[:name].strip, :status_id => DeviceStatus::BINDED})
           render json: { status: 1, message: "ok", data: { name: params[:name].strip } } 
+        else
+          render json: { status: 0, message: "no recored yet" } 
+        end
+      end
+    end
+  end
+
+  def update_imei
+    respond_to do |format|
+      format.json do
+        if @device
+          @device.update_attribute(:imei, params[:imei])
+          render json: { status: 1, message: "ok", data: { imei: params[:imei] } } 
         else
           render json: { status: 0, message: "no recored yet" } 
         end

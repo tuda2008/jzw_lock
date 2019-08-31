@@ -26,6 +26,7 @@ Rails.application.routes.draw do
       post 'devices/unbind', to: 'devices#unbind'
       post 'devices/cmd', to: 'devices#cmd'
       post 'devices/rename', to: 'devices#rename'
+      post 'devices/update_imei', to: 'devices#update_imei'
       post 'devices/users', to: 'devices#users'
       post 'devices/edit_user', to: 'devices#edit_user'
       post 'devices/set_open_warn', to: 'devices#set_open_warn'
