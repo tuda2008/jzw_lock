@@ -22,7 +22,7 @@ ActiveAdmin.register Device do
       end
       column :created_at
     actions do |device|
-      if device.status_id==DeviceStatus::BINDED
+      if device.status_id==DeviceStatus::BINDED || !device.super_admin.nil?
         item "重置设备", reset_admin_device_path(device), method: :put, class: "action-division inactive"
       end
     end
