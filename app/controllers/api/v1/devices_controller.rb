@@ -54,6 +54,10 @@ class Api::V1::DevicesController < ApplicationController
           unless device
             token = Digest::MD5.hexdigest(params[:mac].strip + Device::SALT)
             device = Device.create(:mac => params[:mac].strip, :token => token, :uuid => token[0..3], :status_id => DeviceStatus::BINDED)
+          else
+            if device.status_id == DeviceStatus::UNBIND
+              device.update_attribute(:status_id, DeviceStatus::BINDED)
+            end
           end
           user_device = UserDevice.where(:device => device, :ownership => UserDevice::OWNERSHIP[:super_admin]).first
           unless user_device
@@ -65,9 +69,6 @@ class Api::V1::DevicesController < ApplicationController
             end
             is_admin = true
           else
-            #if device.status_id == DeviceStatus::UNBIND
-              #device.update_attribute(:status_id, DeviceStatus::BINDED)
-            #end
             ud = UserDevice.where(:user_id => @user.id, :device_id => device.id).first
             unless ud
               render json: { status: 0, message: "亲，设备已被绑定", data: {} } and return
