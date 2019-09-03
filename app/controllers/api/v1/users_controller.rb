@@ -23,32 +23,9 @@ class Api::V1::UsersController < ApplicationController
     page = params[:page].blank? ? 1 : params[:page].to_i
     datas = []
     users = User.users_by_device(@device, @user, page, 10)
-    now = Time.now
-    wday = now.wday
     users.each do |user|
       total_count = user.finger_count.to_i + user.password_count.to_i + user.card_count.to_i + user.temp_pwd_count.to_i
-      if user.has_ble_setting.to_i>0
-        if user.ble_type==BleSetting::TYPES[:forever]
-          content = "蓝牙永久权限"
-        elsif user.ble_type==BleSetting::TYPES[:duration]
-          if now >= user.start_at && now <= user.end_at
-            content = "蓝牙生效中"
-          elsif now < user.start_at
-            content = "蓝牙未生效"
-          elsif now > user.end_at
-            content = "蓝牙已过期"
-          end
-        elsif user.ble_type==BleSetting::TYPES[:cycle]
-          weeks = user.cycle.gsub("-", "").gsub("\n", "").split(" ").map(&:to_i)
-          if weeks.include?(wday) && (now.strftime('%H:%M') >= user.cycle_start_at) && (now.strftime('%H:%M') <= user.cycle_end_at)
-            content = "蓝牙生效中"
-          else
-            content = "蓝牙未生效"
-          end
-        end
-      else
-        content = total_count==0 ? "尚未添加任何使用权限" : ""
-      end
+      content = get_ble_content(user, total_count)
       datas << { id: user.id, name: user.nickname, mobile: user.mobile, avatar_url: user.avatar_url.blank? ? "" : user.avatar_url, is_admin: user.ownership!=UserDevice::OWNERSHIP[:user], 
         finger_count: user.finger_count, password_count: user.password_count, card_count: user.card_count,
         temp_pwd_count: user.temp_pwd_count, has_ble_setting: user.has_ble_setting, 

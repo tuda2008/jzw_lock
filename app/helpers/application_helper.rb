@@ -86,12 +86,40 @@ module ApplicationHelper
                 ble_status = BleSetting::STATUSES[:disable]
               end
             elsif du.ble_type== BleSetting::TYPES[:forever]
-              ble_status = BleSetting::STATUSES[:enable]
+              ble_status = BleSetting::STATUSES[:forever]
             end
           end
         end
       end
     end
     return is_admin, has_ble_setting, ble_status
+  end
+
+  def get_ble_content(user, total_count)
+    now = Time.now
+    wday = now.wday
+    if user.has_ble_setting.to_i>0
+      if user.ble_type==BleSetting::TYPES[:forever]
+        content = "蓝牙永久权限"
+      elsif user.ble_type==BleSetting::TYPES[:duration]
+        if now >= user.start_at && now <= user.end_at
+          content = "蓝牙生效中"
+        elsif now < user.start_at
+          content = "蓝牙未生效"
+        elsif now > user.end_at
+          content = "蓝牙已过期"
+        end
+      elsif user.ble_type==BleSetting::TYPES[:cycle]
+        weeks = user.cycle.gsub("-", "").gsub("\n", "").split(" ").map(&:to_i)
+        if weeks.include?(wday) && (now.strftime('%H:%M') >= user.cycle_start_at) && (now.strftime('%H:%M') <= user.cycle_end_at)
+          content = "蓝牙生效中"
+        else
+          content = "蓝牙未生效"
+        end
+      end
+    else
+      content = total_count==0 ? "尚未添加任何使用权限" : ""
+    end
+    return content
   end
 end
