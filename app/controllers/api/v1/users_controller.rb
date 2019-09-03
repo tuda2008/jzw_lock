@@ -11,7 +11,8 @@ class Api::V1::UsersController < ApplicationController
           device_id = ""
           ud = UserDevice.where(:user_id => user.id, :visible => true).first
           device_id = ud.device_id unless ud.nil?
-          render json: { status: 1, message: "ok", data: { openid: user.open_id, session_key: user.session_key, user_id: user.id, mobile: user.mobile.blank? ? "" : user.mobile, device_num: user.device_count, device_id: device_id } }
+          render json: { status: 1, message: "ok", data: { openid: user.open_id, session_key: user.session_key, user_id: user.id, 
+                         name: user.nickname, mobile: user.mobile.blank? ? "" : user.mobile, device_num: user.device_count, device_id: device_id } }
         else
           render json: { status: 0, message: "授权失败" }
         end
@@ -128,7 +129,7 @@ class Api::V1::UsersController < ApplicationController
               id: @user.id,
               device_num: @user.device_count,
               user: {
-                nickName: @user.nickname,
+                name: @user.nickname,
                 avatarUrl: @user.avatar_url,
                 country: @user.country,
                 province: @user.province,
@@ -238,7 +239,7 @@ class Api::V1::UsersController < ApplicationController
             render json: { status: 0, message: "验证码无效", data: {} } and return
           else
             ac.update_attribute(:verified, true)
-            render json: { status: 1, message: "ok", user_id: user.id, device_num: user.device_count, mobile: user.mobile.blank? ? "" : user.mobile }
+            render json: { status: 1, message: "ok", user_id: user.id, name: user.nickname, device_num: user.device_count, mobile: user.mobile.blank? ? "" : user.mobile }
           end
         else
           ac = AuthCode.where('mobile = ? and code = ? and auth_type = ? and verified = ?', params[:mobile], params[:verification_code], params[:type], false).first
@@ -249,7 +250,7 @@ class Api::V1::UsersController < ApplicationController
             if !@user.nil? && @user.mobile!=params[:mobile]
               @user.update_attribute(:mobile, params[:mobile]) 
             end
-            render json: { status: 1, message: "ok", user_id: @user.id, device_num: @user.device_count, mobile: @user.mobile.blank? ? "" : @user.mobile }
+            render json: { status: 1, message: "ok", user_id: @user.id, name: @user.nickname, device_num: @user.device_count, mobile: @user.mobile.blank? ? "" : @user.mobile }
           end
         end
       end
@@ -280,12 +281,12 @@ class Api::V1::UsersController < ApplicationController
               end
             end
           end
-          render json: { status: 1, message: "ok", user_id: user.id, device_num: user.device_count, mobile: user.mobile.blank? ? "" : user.mobile }
+          render json: { status: 1, message: "ok", user_id: user.id, name: user.nickname, device_num: user.device_count, mobile: user.mobile.blank? ? "" : user.mobile }
         else
           if !@user.nil? && @user.mobile!=mobile
             @user.update_attribute(:mobile, mobile) 
           end
-          render json: { status: 1, message: "ok", user_id: @user.id, device_num: @user.device_count, mobile: @user.mobile.blank? ? "" : @user.mobile }
+          render json: { status: 1, message: "ok", user_id: @user.id, name: @user.nickname, device_num: @user.device_count, mobile: @user.mobile.blank? ? "" : @user.mobile }
         end
       end
     end
