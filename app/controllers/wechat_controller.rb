@@ -17,7 +17,7 @@ class WechatController < ApplicationController
       @timestamp = Time.now.to_i
       @uuid = Digest::MD5.hexdigest("#{@timestamp}" + Device::SALT)
       params_string = "jsapi_ticket=#{ticket}&noncestr=#{@uuid}&timestamp=#{@timestamp}&url=#{url}"
-      p params_string
+      Rails.logger.info params_string
       @signature = Digest::SHA1.hexdigest(params_string)
     rescue => e
       p e.message

@@ -13,7 +13,7 @@ module ApplicationHelper
     cipher = OpenSSL::Cipher.new("AES-128-CBC")
     cipher.decrypt
     cipher.key = session_key
-    cipher.iv =iv
+    cipher.iv = iv
     result = cipher.update(encrypted_data) + cipher.final
     begin
       JSON.parse(result)["purePhoneNumber"]

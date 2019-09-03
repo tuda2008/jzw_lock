@@ -21,6 +21,7 @@ Rails.application.routes.draw do
       post 'users/update_name', to: 'users#update_name'
       post 'users/sms_verification_code', to: 'users#sms_verification_code'
       post 'users/bind_mobile', to: 'users#bind_mobile'
+      post 'users/bind_wechat_mobile', to: 'users#bind_wechat_mobile'
       resources :users, except: [:new, :edit]
       post 'devices/bind', to: 'devices#bind'
       post 'devices/unbind', to: 'devices#unbind'

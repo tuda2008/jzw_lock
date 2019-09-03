@@ -1,6 +1,6 @@
 class Api::V1::UsersController < ApplicationController
   skip_before_action :verify_authenticity_token
-  before_action :find_user, only: [:update_wechat_userinfo, :update_gps, :update_name, :info, :sms_verification_code, :bind_mobile, :create, :index]
+  before_action :find_user, only: [:update_wechat_userinfo, :update_gps, :update_name, :info, :sms_verification_code, :bind_mobile, :create, :index, :bind_wechat_mobile]
   before_action :find_device, only: [:index, :show, :create]
 
   def wechat_auth
@@ -254,6 +254,41 @@ class Api::V1::UsersController < ApplicationController
         end
       end
     end
+  end
+
+  def bind_wechat_mobile
+    respond_to do |format|
+      format.json do
+        mobile = get_wechat_mobile(params[:session_key], params[:iv], params[:encrypted_data])
+        Rails.logger.info "================="
+        Rails.logger.info mobile
+        Rails.logger.info "================="
+        unless check_mobile(mobile)
+          render json: { status: 0, message: "请输入有效的手机号", data: {} } and return
+        end
+        user = User.find_by(mobile: mobile)
+        if user.present?
+          unless user.open_id.blank?
+            render json: { status: 0, message: "#{mobile}已被绑定", data: {} } and return
+          else
+            hash = @user.dup.attributes.except("id", "created_at", "updated_at", "nickname", "mobile") if @user
+            User.transaction do
+              if @user.id!=user.id
+                @user.destroy
+                user.update_attributes(hash) unless hash.nil?
+                hash = nil
+              end
+            end
+          end
+          render json: { status: 1, message: "ok", user_id: user.id, device_num: user.device_count }
+        else
+          if !@user.nil? && @user.mobile!=params[:mobile]
+            @user.update_attribute(:mobile, params[:mobile]) 
+          end
+          render json: { status: 1, message: "ok", user_id: @user.id, device_num: @user.device_count }
+        end
+      end
+    end 
   end
 
   def update_name
