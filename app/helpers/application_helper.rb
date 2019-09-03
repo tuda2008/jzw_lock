@@ -86,7 +86,7 @@ module ApplicationHelper
                 ble_status = BleSetting::STATUSES[:disable]
               end
             elsif du.ble_type== BleSetting::TYPES[:forever]
-              ble_status = BleSetting::STATUSES[:forever]
+              ble_status = BleSetting::STATUSES[:enable]
             end
           end
         end
