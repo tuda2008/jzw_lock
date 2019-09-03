@@ -224,7 +224,7 @@ class Api::V1::UsersController < ApplicationController
         code = AuthCode.create!(mobile: params[:mobile], auth_type: type, code: rand(1000..9999).to_s) if code.blank?
       
         if code
-          result = send_sms(User::YUNPIAN_API_KEY, params[:mobile], code.code, "获取验证码失败", log)
+          result = send_sms(User::YUNPIAN_API_KEY, User::TPL_ID, params[:mobile], code.code, "获取验证码失败", log)
           render json: result
         else
           render json: { status: 0, message: "验证码生成错误，请重试", data: {} }
@@ -319,83 +319,5 @@ class Api::V1::UsersController < ApplicationController
 
     def find_device
       @device = Device.find_by(id: params[:device_id])
-    end
-    
-    def check_mobile(mobile)
-      return false if mobile.length != 11
-      mobile =~ /\A1[3|4|5|7|8|9][0-9]\d{4,8}\z/
-    end
-
-    def send_sms(api_key, mobile, sms_code, error_msg, log)
-      url = "https://sms.yunpian.com/v2/sms/tpl_single_send.json"
-      tpl_id = 1689800
-      tpl_value = "#code#=#{sms_code}"
-      options = "apikey=#{api_key}&mobile=#{mobile}&tpl_id=#{tpl_id}&tpl_value=#{tpl_value}"
-      hash = {}
-      
-      begin
-        response = RestClient.post(url, options)
-        result = JSON.parse(response.body)
-
-        if result['code'].to_i == 0
-          log.update_attribute(:sms_total, log.sms_total + 1)
-          hash = { status: 1, message: "ok" }
-        else
-          if result['code'].to_i == 9 || result['code'].to_i == 17
-            hash = { status: 0, message: result['msg'] }
-          else
-            if session && result['code'].to_i == 103
-              # 发送失败，更新每分钟发送限制
-              sym = "#{mobile}_#{params[:type]}".to_sym
-              session.delete(sym)
-            end
-            hash = { status: 0, message: result['msg'] }
-          end
-        end
-      rescue => e
-        p e.message
-        hash = { status: 0, message: "发送失败，请稍后重试" }
-      end
-      hash
-    end
-
-    def is_can_open_lock(device, user)
-      is_admin = false
-      has_ble_setting = false
-      ble_status = BleSetting::STATUSES[:disable]
-      now = Time.now
-      wday = now.wday
-
-      user_device = UserDevice.where(:device => device, :user => user, :visible => true).first
-      if user_device
-        if user_device.ownership!=UserDevice::OWNERSHIP[:user]
-          is_admin = true
-          has_ble_setting = true
-          ble_status = BleSetting::STATUSES[:enable]
-        else
-          has_ble_setting = user_device.has_ble_setting
-          if has_ble_setting
-            du = BleSetting.where(device_id: device.id, user_id: user.id).first
-            unless du.nil?
-              if du.ble_type== BleSetting::TYPES[:cycle]
-                if du.cycle.include?(wday) && (now.strftime('%H:%M') >= du.cycle_start_at) && (now.strftime('%H:%M') <= du.cycle_end_at)
-                  ble_status = BleSetting::STATUSES[:enable]
-                end
-              elsif du.ble_type== BleSetting::TYPES[:duration]
-                if now >= du.start_at && now <= du.end_at
-                  ble_status = BleSetting::STATUSES[:enable]
-                elsif now > du.end_at
-                  ble_status = BleSetting::STATUSES[:expire]
-                elsif now < du.start_at
-                  ble_status = BleSetting::STATUSES[:disable]
-                end
-              elsif du.ble_type== BleSetting::TYPES[:forever]
-                ble_status = BleSetting::STATUSES[:forever]
-              end
-            end
-          end
-        end
-      end
-      return is_admin, has_ble_setting, ble_status
     end
 end

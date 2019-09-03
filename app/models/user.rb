@@ -24,6 +24,7 @@
 
 class User < ApplicationRecord
   YUNPIAN_API_KEY = ""
+  TPL_ID = nil
   WECHAT_APP_ID = ""
   WECHAT_APP_SECRET = ""
   PROVIDERS = { wechat: 1, qq: 2 }
