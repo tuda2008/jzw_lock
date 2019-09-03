@@ -6,9 +6,9 @@ class WechatController < ApplicationController
   end
 
   def airkiss
-    @wechat_app_id = ""
-    wechat_app_secret = ""
-    url = ""
+    @wechat_app_id = User::WECHAT_APP_ID
+    wechat_app_secret = User::WECHAT_APP_SECRET
+    url = "#{request.url}"
     begin
       response = RestClient.get("https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=#{@wechat_app_id}&secret=#{wechat_app_secret}", timeout: 2)
       token = JSON.parse(response.body)["access_token"]
@@ -16,7 +16,8 @@ class WechatController < ApplicationController
       ticket =  JSON.parse(response.body)['ticket']
       @timestamp = Time.now.to_i
       @uuid = Digest::MD5.hexdigest("#{@timestamp}" + Device::SALT)
-      params_string = "jsapi_ticket=#{ticket}&noncestr=#{uuid}&timestamp=#{timestamp}&url=#{url}"
+      params_string = "jsapi_ticket=#{ticket}&noncestr=#{@uuid}&timestamp=#{@timestamp}&url=#{url}"
+      p params_string
       @signature = Digest::SHA1.hexdigest(params_string)
     rescue => e
       p e.message
