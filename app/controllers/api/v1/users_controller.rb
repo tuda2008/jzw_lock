@@ -282,13 +282,13 @@ class Api::V1::UsersController < ApplicationController
           end
           render json: { status: 1, message: "ok", user_id: user.id, device_num: user.device_count }
         else
-          if !@user.nil? && @user.mobile!=params[:mobile]
-            @user.update_attribute(:mobile, params[:mobile]) 
+          if !@user.nil? && @user.mobile!=mobile
+            @user.update_attribute(:mobile, mobile) 
           end
           render json: { status: 1, message: "ok", user_id: @user.id, device_num: @user.device_count }
         end
       end
-    end 
+    end
   end
 
   def update_name
