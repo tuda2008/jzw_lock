@@ -64,7 +64,7 @@ class Api::V1::UsersController < ApplicationController
     respond_to do |format|
       format.json do
         unless user
-          user = User.new(nickname: params[:name], mobile: params[:mobile], gender: 1, device_count: 1)
+          user = User.new(nickname: params[:name], mobile: params[:mobile], gender: 1)
           if user.valid?
             user.save
             UserDevice.create(:author_id => @user.id, :user_id => user.id, :device_id => @device.id, :ownership => UserDevice::OWNERSHIP[:user])
@@ -238,7 +238,7 @@ class Api::V1::UsersController < ApplicationController
             render json: { status: 0, message: "验证码无效", data: {} } and return
           else
             ac.update_attribute(:verified, true)
-            render json: { status: 1, message: "ok", user_id: user.id, device_num: user.device_count }
+            render json: { status: 1, message: "ok", user_id: user.id, device_num: user.device_count, mobile: user.mobile.blank? ? "" : user.mobile }
           end
         else
           ac = AuthCode.where('mobile = ? and code = ? and auth_type = ? and verified = ?', params[:mobile], params[:verification_code], params[:type], false).first
@@ -249,7 +249,7 @@ class Api::V1::UsersController < ApplicationController
             if !@user.nil? && @user.mobile!=params[:mobile]
               @user.update_attribute(:mobile, params[:mobile]) 
             end
-            render json: { status: 1, message: "ok", user_id: @user.id, device_num: @user.device_count }
+            render json: { status: 1, message: "ok", user_id: @user.id, device_num: @user.device_count, mobile: @user.mobile.blank? ? "" : @user.mobile }
           end
         end
       end
@@ -280,12 +280,12 @@ class Api::V1::UsersController < ApplicationController
               end
             end
           end
-          render json: { status: 1, message: "ok", user_id: user.id, device_num: user.device_count }
+          render json: { status: 1, message: "ok", user_id: user.id, device_num: user.device_count, mobile: user.mobile.blank? ? "" : user.mobile }
         else
           if !@user.nil? && @user.mobile!=mobile
             @user.update_attribute(:mobile, mobile) 
           end
-          render json: { status: 1, message: "ok", user_id: @user.id, device_num: @user.device_count }
+          render json: { status: 1, message: "ok", user_id: @user.id, device_num: @user.device_count, mobile: @user.mobile.blank? ? "" : @user.mobile }
         end
       end
     end
