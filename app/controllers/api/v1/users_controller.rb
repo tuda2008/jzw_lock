@@ -11,7 +11,7 @@ class Api::V1::UsersController < ApplicationController
           device_id = ""
           ud = UserDevice.where(:user_id => user.id, :visible => true).first
           device_id = ud.device_id unless ud.nil?
-          render json: { status: 1, message: "ok", data: { openid: user.open_id, user_id: user.id, mobile: user.mobile.blank? ? "" : user.mobile, device_num: user.device_count, device_id: device_id } }
+          render json: { status: 1, message: "ok", data: { openid: user.open_id, session_key: user.session_key, user_id: user.id, mobile: user.mobile.blank? ? "" : user.mobile, device_num: user.device_count, device_id: device_id } }
         else
           render json: { status: 0, message: "授权失败" }
         end
