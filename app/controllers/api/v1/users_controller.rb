@@ -268,10 +268,15 @@ class Api::V1::UsersController < ApplicationController
           render json: { status: 0, message: "请输入有效的手机号", data: {} } and return
         end
         user = User.find_by(mobile: mobile)
+        device_id = ""
         if user.present?
           unless user.open_id.blank?
             if @user.id == user.id
-              render json: { status: 1, message: "ok", user_id: @user.id, name: @user.nickname, device_num: @user.device_count, mobile: @user.mobile } and return
+              if @user.device_count > 0 
+                ud = UserDevice.where(:user_id => @user.id, :visible => true).first
+                device_id = ud.device_id unless ud.nil?
+              end
+              render json: { status: 1, message: "ok", user_id: @user.id, name: @user.nickname, device_id: device_id, device_num: @user.device_count, mobile: @user.mobile } and return
             else
               render json: { status: 0, message: "#{mobile}已被绑定", data: {} } and return
             end
@@ -284,14 +289,22 @@ class Api::V1::UsersController < ApplicationController
                 hash = nil
               end
             end
+            if user.device_count > 0 
+              ud = UserDevice.where(:user_id => user.id, :visible => true).first
+              device_id = ud.device_id unless ud.nil?
+            end
           end
-          render json: { status: 1, message: "ok", user_id: user.id, name: user.nickname, device_num: user.device_count, mobile: user.mobile.blank? ? "" : user.mobile }
+          render json: { status: 1, message: "ok", user_id: user.id, name: user.nickname, device_id: device_id, device_num: user.device_count, mobile: user.mobile.blank? ? "" : user.mobile }
         else
           if !@user.nil? && @user.mobile!=mobile
             if @user.nickname.blank?
               @user.update_attributes({:mobile => mobile, :nickname => mobile})
             else
               @user.update_attribute(:mobile, mobile)
+            end
+            if @user.device_count > 0 
+              ud = UserDevice.where(:user_id => @user.id, :visible => true).first
+              device_id = ud.device_id unless ud.nil?
             end
           end
           render json: { status: 1, message: "ok", user_id: @user.id, name: @user.nickname, device_num: @user.device_count, mobile: @user.mobile.blank? ? "" : @user.mobile }
