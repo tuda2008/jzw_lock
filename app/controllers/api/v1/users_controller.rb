@@ -270,7 +270,11 @@ class Api::V1::UsersController < ApplicationController
         user = User.find_by(mobile: mobile)
         if user.present?
           unless user.open_id.blank?
-            render json: { status: 0, message: "#{mobile}已被绑定", data: {} } and return
+            if @user.id == user.id
+              render json: { status: 1, message: "ok", user_id: @user.id, name: @user.nickname, device_num: @user.device_count, mobile: @user.mobile } and return
+            else
+              render json: { status: 0, message: "#{mobile}已被绑定", data: {} } and return
+            end
           else
             hash = @user.dup.attributes.except("id", "created_at", "updated_at", "nickname", "mobile") if @user
             User.transaction do
