@@ -325,7 +325,7 @@ class Api::V1::UsersController < ApplicationController
               device_id = ud.device_id unless ud.nil?
             end
           end
-          render json: { status: 1, message: "ok", user_id: @user.id, name: @user.nickname, device_num: @user.device_count, mobile: @user.mobile.blank? ? "" : @user.mobile }
+          render json: { status: 1, message: "ok", user_id: @user.id, name: @user.nickname, device_id: device_id, device_num: @user.device_count, mobile: @user.mobile.blank? ? "" : @user.mobile }
         end
       end
     end
