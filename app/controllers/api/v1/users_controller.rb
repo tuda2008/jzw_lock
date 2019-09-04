@@ -289,7 +289,7 @@ class Api::V1::UsersController < ApplicationController
         device_id = ""
         if user.present?
           unless user.open_id.blank?
-            if @user.id == user.id
+            if !@user.nil? && @user.id==user.id
               if @user.device_count > 0 
                 ud = UserDevice.where(:user_id => @user.id, :visible => true).first
                 device_id = ud.device_id unless ud.nil?
