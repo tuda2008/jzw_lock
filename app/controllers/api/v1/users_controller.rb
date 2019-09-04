@@ -287,7 +287,12 @@ class Api::V1::UsersController < ApplicationController
         end
         user = User.find_by(mobile: mobile)
         device_id = ""
+        device_count = 0
         if user.present?
+          device_count = user.device_count
+          Rails.logger.info "================="
+          Rails.logger.info device_count
+          Rails.logger.info "================="
           unless user.open_id.blank?
             if !@user.nil? && @user.id==user.id
               if @user.device_count > 0 
