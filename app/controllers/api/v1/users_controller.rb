@@ -151,7 +151,7 @@ class Api::V1::UsersController < ApplicationController
         unless check_mobile(params[:mobile])
           render json: { status: 0, message: "请输入有效的手机号", data: {} } and return
         end
-        unless %W(1 2 3 4).include?(params[:type].to_s)
+        unless %W(1 2 3 4 5).include?(params[:type].to_s)
           render json: { status: 0, message: "type参数错误", data: {} } and return
         end
 
@@ -166,6 +166,7 @@ class Api::V1::UsersController < ApplicationController
           if user.present? && !user.open_id.blank?
             render json: { status: 0, message: "#{params[:mobile]}已经被占用", data: {} } and return
           end
+        elsif type == 5 # 临时登录
         else # 重置密码和修改密码
           if user.blank?
             render json: { status: 0, message: "#{params[:mobile]}未注册", data: {} } and return
@@ -217,7 +218,7 @@ class Api::V1::UsersController < ApplicationController
         unless check_mobile(params[:mobile])
           render json: { status: 0, message: "请输入有效的手机号", data: {} } and return
         end
-        unless %W(1 2 3 4).include?(params[:type].to_s)
+        unless %W(1 2 3 4 5).include?(params[:type].to_s)
           render json: { status: 0, message: "type参数错误", data: {} } and return
         end
         user = User.find_by(mobile: params[:mobile])
@@ -229,7 +230,7 @@ class Api::V1::UsersController < ApplicationController
                 ud = UserDevice.where(:user_id => @user.id, :visible => true).first
                 device_id = ud.device_id unless ud.nil?
               end
-              render json: { status: 1, message: "ok", user_id: @user.id, name: @user.nickname, device_id: device_id, device_num: @user.device_count, mobile: @user.mobile } and return
+              render json: { status: 1, message: "ok", openid: @user.open_id, user_id: @user.id, name: @user.nickname, device_id: device_id, device_num: @user.device_count, mobile: @user.mobile } and return
             else
               render json: { status: 0, message: "#{params[:mobile]}已被绑定", data: {} } and return
             end
@@ -252,7 +253,7 @@ class Api::V1::UsersController < ApplicationController
               ud = UserDevice.where(:user_id => user.id, :visible => true).first
               device_id = ud.device_id unless ud.nil?
             end
-            render json: { status: 1, message: "ok", user_id: user.id, name: user.nickname, device_id: device_id, device_num: user.device_count, mobile: user.mobile.blank? ? "" : user.mobile }
+            render json: { status: 1, message: "ok", openid: user.open_id, user_id: user.id, name: user.nickname, device_id: device_id, device_num: user.device_count, mobile: user.mobile.blank? ? "" : user.mobile }
           end
         else
           ac = AuthCode.where('mobile = ? and code = ? and auth_type = ? and verified = ?', params[:mobile], params[:verification_code], params[:type], false).first
@@ -267,7 +268,7 @@ class Api::V1::UsersController < ApplicationController
               ud = UserDevice.where(:user_id => @user.id, :visible => true).first
               device_id = ud.device_id unless ud.nil?
             end
-            render json: { status: 1, message: "ok", user_id: @user.id, name: @user.nickname, device_id: device_id, device_num: @user.device_count, mobile: @user.mobile.blank? ? "" : @user.mobile }
+            render json: { status: 1, message: "ok", openid: @user.open_id, user_id: @user.id, name: @user.nickname, device_id: device_id, device_num: @user.device_count, mobile: @user.mobile.blank? ? "" : @user.mobile }
           end
         end
       end
