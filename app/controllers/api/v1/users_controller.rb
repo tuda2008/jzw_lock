@@ -284,7 +284,11 @@ class Api::V1::UsersController < ApplicationController
           render json: { status: 1, message: "ok", user_id: user.id, name: user.nickname, device_num: user.device_count, mobile: user.mobile.blank? ? "" : user.mobile }
         else
           if !@user.nil? && @user.mobile!=mobile
-            @user.update_attribute(:mobile, mobile) 
+            if @user.nickname.blank?
+              @user.update_attributes({:mobile => mobile, :nickname => mobile})
+            else
+              @user.update_attribute(:mobile, mobile)
+            end
           end
           render json: { status: 1, message: "ok", user_id: @user.id, name: @user.nickname, device_num: @user.device_count, mobile: @user.mobile.blank? ? "" : @user.mobile }
         end
