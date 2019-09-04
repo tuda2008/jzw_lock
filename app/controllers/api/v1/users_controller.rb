@@ -223,7 +223,9 @@ class Api::V1::UsersController < ApplicationController
         end
         user = User.find_by(mobile: params[:mobile])
         device_id = ""
+        device_count = 0
         if user.present?
+          device_count = user.device_count
           unless user.open_id.blank?
             if !@user.nil? && @user.id==user.id
               if @user.device_count > 0 
@@ -249,11 +251,11 @@ class Api::V1::UsersController < ApplicationController
             render json: { status: 0, message: "验证码无效", data: {} } and return
           else
             ac.update_attribute(:verified, true)
-            if user.device_count > 0 
+            if device_count > 0 
               ud = UserDevice.where(:user_id => user.id, :visible => true).first
               device_id = ud.device_id unless ud.nil?
             end
-            render json: { status: 1, message: "ok", openid: user.open_id, user_id: user.id, name: user.nickname, device_id: device_id, device_num: user.device_count, mobile: user.mobile.blank? ? "" : user.mobile }
+            render json: { status: 1, message: "ok", openid: user.open_id, user_id: user.id, name: user.nickname, device_id: device_id, device_num: device_count, mobile: user.mobile.blank? ? "" : user.mobile }
           end
         else
           ac = AuthCode.where('mobile = ? and code = ? and auth_type = ? and verified = ?', params[:mobile], params[:verification_code], params[:type], false).first
@@ -312,12 +314,12 @@ class Api::V1::UsersController < ApplicationController
                 hash = nil
               end
             end
-            if user.device_count > 0 
+            if device_count>0
               ud = UserDevice.where(:user_id => user.id, :visible => true).first
               device_id = ud.device_id unless ud.nil?
             end
           end
-          render json: { status: 1, message: "ok", user_id: user.id, name: user.nickname, device_id: device_id, device_num: user.device_count, mobile: user.mobile.blank? ? "" : user.mobile }
+          render json: { status: 1, message: "ok", user_id: user.id, name: user.nickname, device_id: device_id, device_num: device_count, mobile: user.mobile.blank? ? "" : user.mobile }
         else
           if !@user.nil? && @user.mobile!=mobile
             if @user.nickname.blank?
