@@ -224,7 +224,15 @@ class Api::V1::UsersController < ApplicationController
         device_id = ""
         if user.present?
           unless user.open_id.blank?
-            render json: { status: 0, message: "#{params[:mobile]}已被绑定", data: {} } and return
+            if @user.id == user.id
+              if @user.device_count > 0 
+                ud = UserDevice.where(:user_id => @user.id, :visible => true).first
+                device_id = ud.device_id unless ud.nil?
+              end
+              render json: { status: 1, message: "ok", user_id: @user.id, name: @user.nickname, device_id: device_id, device_num: @user.device_count, mobile: @user.mobile } and return
+            else
+              render json: { status: 0, message: "#{params[:mobile]}已被绑定", data: {} } and return
+            end
           else
             hash = @user.dup.attributes.except("id", "created_at", "updated_at", "nickname", "mobile") if @user
             User.transaction do
