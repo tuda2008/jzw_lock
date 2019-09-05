@@ -57,4 +57,14 @@ class UserDevice < ApplicationRecord
   def is_admin?
   	self.ownership == OWNERSHIP[:super_admin] || self.ownership == OWNERSHIP[:admin]
   end
+
+  def self.get_first_device_id_by_user(user_id)
+    ud = UserDevice.where(:user_id => user_id, :visible => true).first
+    ud.nil? ?  "" : ud.device_id
+  end
+
+  def self.get_first_device_id(user_id, device_id)
+    ud = UserDevice.where(:user_id => user_id, :device_id => device_id, :visible => true).first
+    ud.nil? ?  "" : ud.device_id
+  end
 end

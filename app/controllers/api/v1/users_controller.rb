@@ -9,8 +9,16 @@ class Api::V1::UsersController < ApplicationController
       format.json do
         if user
           device_id = ""
-          ud = UserDevice.where(:user_id => user.id, :visible => true).first
-          device_id = ud.device_id unless ud.nil?
+          if user.device_count>0
+            unless params[:device_id].blank?
+              device_id = UserDevice.get_first_device_id(user.id, params[:device_id])
+              unless device_id.blank?
+                device_id = UserDevice.get_first_device_id_by_user(user.id)
+              end
+            else
+              device_id = UserDevice.get_first_device_id_by_user(user.id)
+            end
+          end
           render json: { status: 1, message: "ok", data: { openid: user.open_id, session_key: user.session_key, user_id: user.id, 
                          name: user.nickname, mobile: user.mobile.blank? ? "" : user.mobile, device_num: user.device_count, device_id: device_id } }
         else
@@ -95,11 +103,19 @@ class Api::V1::UsersController < ApplicationController
       format.json do
         if @user
           device_id = ""
-          ud = UserDevice.where(:user_id => @user.id, :visible => true).first
-          device_id = ud.device_id unless ud.nil?
+          if @user.device_count>0
+            unless params[:device_id].blank?
+              device_id = UserDevice.get_first_device_id(@user.id, params[:device_id])
+              unless device_id.blank?
+                device_id = UserDevice.get_first_device_id_by_user(@user.id)
+              end
+            else
+              device_id = UserDevice.get_first_device_id_by_user(@user.id)
+            end
+          end
           @user.update_attributes({:country => params[:country], :province => params[:province], :city => params[:city],
             :nickname => params[:nickName], :gender => params[:gender], :avatar_url => params[:avatarUrl]})
-          render json: { status: 1, message: "ok", user_id: @user.id, device_num: @user.device_count, device_id: device_id }
+          render json: { status: 1, message: "ok", user_id: @user.id, mobile: @user.mobile, device_num: @user.device_count, device_id: device_id }
         else
           render json: { status: 0, message: "更新用户信息失败" }
         end
@@ -228,9 +244,15 @@ class Api::V1::UsersController < ApplicationController
           device_count = user.device_count
           unless user.open_id.blank?
             if !@user.nil? && @user.id==user.id
-              if @user.device_count > 0 
-                ud = UserDevice.where(:user_id => @user.id, :visible => true).first
-                device_id = ud.device_id unless ud.nil?
+              if user.device_count>0
+                unless params[:device_id].blank?
+                  device_id = UserDevice.get_first_device_id(user.id, params[:device_id])
+                  unless device_id.blank?
+                    device_id = UserDevice.get_first_device_id_by_user(user.id)
+                  end
+                else
+                  device_id = UserDevice.get_first_device_id_by_user(user.id)
+                end
               end
               render json: { status: 1, message: "ok", openid: user.open_id, user_id: user.id, name: user.nickname, device_id: device_id, device_num: user.device_count, mobile: user.mobile } and return
             else
@@ -251,9 +273,15 @@ class Api::V1::UsersController < ApplicationController
             render json: { status: 0, message: "验证码无效", data: {} } and return
           else
             ac.update_attribute(:verified, true)
-            if device_count > 0 
-              ud = UserDevice.where(:user_id => user.id, :visible => true).first
-              device_id = ud.device_id unless ud.nil?
+            if device_count>0
+              unless params[:device_id].blank?
+                device_id = UserDevice.get_first_device_id(user.id, params[:device_id])
+                unless device_id.blank?
+                  device_id = UserDevice.get_first_device_id_by_user(user.id)
+                end
+              else
+                device_id = UserDevice.get_first_device_id_by_user(user.id)
+              end
             end
             render json: { status: 1, message: "ok", openid: user.open_id, user_id: user.id, name: user.nickname, device_id: device_id, device_num: device_count, mobile: user.mobile.blank? ? "" : user.mobile }
           end
@@ -267,8 +295,14 @@ class Api::V1::UsersController < ApplicationController
               @user.update_attribute(:mobile, params[:mobile]) 
             end
             if @user.device_count > 0 
-              ud = UserDevice.where(:user_id => @user.id, :visible => true).first
-              device_id = ud.device_id unless ud.nil?
+              unless params[:device_id].blank?
+                device_id = UserDevice.get_first_device_id(@user.id, params[:device_id])
+                unless device_id.blank?
+                  device_id = UserDevice.get_first_device_id_by_user(@user.id)
+                end
+              else
+                device_id = UserDevice.get_first_device_id_by_user(@user.id)
+              end
             end
             render json: { status: 1, message: "ok", openid: @user.open_id, user_id: @user.id, name: @user.nickname, device_id: device_id, device_num: @user.device_count, mobile: @user.mobile.blank? ? "" : @user.mobile }
           end
@@ -294,11 +328,17 @@ class Api::V1::UsersController < ApplicationController
           device_count = user.device_count
           unless user.open_id.blank?
             if !@user.nil? && @user.id==user.id
-              if @user.device_count > 0 
-                ud = UserDevice.where(:user_id => @user.id, :visible => true).first
-                device_id = ud.device_id unless ud.nil?
+              if user.device_count>0
+                unless params[:device_id].blank?
+                  device_id = UserDevice.get_first_device_id(user.id, params[:device_id])
+                  unless device_id.blank?
+                    device_id = UserDevice.get_first_device_id_by_user(user.id)
+                  end
+                else
+                  device_id = UserDevice.get_first_device_id_by_user(user.id)
+                end
               end
-              render json: { status: 1, message: "ok", user_id: @user.id, name: @user.nickname, device_id: device_id, device_num: @user.device_count, mobile: @user.mobile } and return
+              render json: { status: 1, message: "ok", user_id: user.id, name: user.nickname, device_id: device_id, device_num: user.device_count, mobile: user.mobile } and return
             else
               render json: { status: 0, message: "#{mobile}已被绑定", data: {} } and return
             end
@@ -312,8 +352,14 @@ class Api::V1::UsersController < ApplicationController
               end
             end
             if device_count>0
-              ud = UserDevice.where(:user_id => user.id, :visible => true).first
-              device_id = ud.device_id unless ud.nil?
+              unless params[:device_id].blank?
+                device_id = UserDevice.get_first_device_id(user.id, params[:device_id])
+                unless device_id.blank?
+                  device_id = UserDevice.get_first_device_id_by_user(user.id)
+                end
+              else
+                device_id = UserDevice.get_first_device_id_by_user(user.id)
+              end
             end
           end
           render json: { status: 1, message: "ok", user_id: user.id, name: user.nickname, device_id: device_id, device_num: device_count, mobile: user.mobile.blank? ? "" : user.mobile }
@@ -325,8 +371,14 @@ class Api::V1::UsersController < ApplicationController
               @user.update_attribute(:mobile, mobile)
             end
             if @user.device_count > 0 
-              ud = UserDevice.where(:user_id => @user.id, :visible => true).first
-              device_id = ud.device_id unless ud.nil?
+              unless params[:device_id].blank?
+                device_id = UserDevice.get_first_device_id(@user.id, params[:device_id])
+                unless device_id.blank?
+                  device_id = UserDevice.get_first_device_id_by_user(@user.id)
+                end
+              else
+                device_id = UserDevice.get_first_device_id_by_user(@user.id)
+              end
             end
           end
           render json: { status: 1, message: "ok", user_id: @user.id, name: @user.nickname, device_id: device_id, device_num: @user.device_count, mobile: @user.mobile.blank? ? "" : @user.mobile }
