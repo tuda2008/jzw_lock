@@ -11,21 +11,21 @@
 
 class Carousel < ApplicationRecord
   TAG_HOME = "home"
-  TAG_DEVICE = "device"
-  TAG_COLLECTION = [["首页", "home"], ["设备详情", "device"]]
-  TAG_HASH = { "home" => "首页", "device" => "设备详情" }
+  TAG_WELCOME = "welcome"
+  TAG_COLLECTION = [["首页", "home"]]
+  TAG_HASH = { "home" => "首页" }
   mount_uploaders :images, CarouselUploader
   serialize :images, Array
 
   validates :tag, presence: true
   validates_uniqueness_of :tag
-  validates :tag, inclusion: {in: ['home', 'device']} 
+  validates :tag, inclusion: {in: ['home', 'welcome']} 
   validate :images_not_empty
   
   scope :visible, -> { where(visible: true) }
   scope :invisible, -> { where(visible: false) }
   scope :home, -> { where(tag: TAG_HOME) }
-  scope :device, -> { where(tag: TAG_DEVICE) }
+  scope :welcome, -> { where(tag: TAG_WELCOME) }
 
   # images不能为空检查
   def images_not_empty

@@ -3,15 +3,15 @@ require 'digest/md5'
 class CarouselUploader < BaseUploader
 
   version :large do
-    process resize_to_fill: [1000,450]
+    process resize_to_fill: [1000,600]
   end
   
   version :thumb do
-    process resize_to_fill: [320,240]
+    process resize_to_fill: [640,400]
   end
   
   version :small, from_version: :thumb do
-    process resize_to_fill: [160,120]
+    process resize_to_fill: [320,200]
   end
 
   def filename

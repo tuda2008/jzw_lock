@@ -34,6 +34,7 @@ Rails.application.routes.draw do
       post 'invitations/get_token', to: 'invitations#create'
       post 'invitations/join_by_token', to: 'invitations#join_by_token'
       post 'wechat/update_form_ids', to: 'wechat#update_form_ids'
+      get 'carousels', to: 'faqs#carousels'
       resources :ble_settings, only: [:show, :create, :destroy]
       resources :devices, only: [:index, :show]
       resources :messages, only: [:index, :show]

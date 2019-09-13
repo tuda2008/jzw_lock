@@ -35,4 +35,19 @@ class Api::V1::FaqsController < ApplicationController
       end
     end
   end
+
+  def carousels
+    @carousels = []
+    home_carousels = Carousel.visible.home.limit(1)
+    unless home_carousels.empty?
+      home_carousels[0].images.each_with_index do |image, index|
+        @carousels << { id: index, url: image.url(:thumb) }
+      end
+    end
+    respond_to do |format|
+      format.json do
+        render json: { status: 1, message: "ok", carousels: @carousels }
+      end
+    end
+  end
 end

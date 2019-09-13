@@ -71,21 +71,21 @@ module ApplicationHelper
       else
         has_ble_setting = user_device.has_ble_setting
         if has_ble_setting
-          du = BleSetting.where(device_id: device.id, user_id: user.id).first
-          unless du.nil?
-            if du.ble_type== BleSetting::TYPES[:cycle]
-              if du.cycle.include?(wday) && (now.strftime('%H:%M') >= du.cycle_start_at) && (now.strftime('%H:%M') <= du.cycle_end_at)
+          bs = BleSetting.where(device_id: device.id, user_id: user.id).first
+          unless bs.nil?
+            if bs.ble_type==BleSetting::TYPES[:cycle]
+              if bs.cycle.include?(wday) && (now.strftime('%H:%M') >= bs.cycle_start_at) && (now.strftime('%H:%M') <= bs.cycle_end_at)
                 ble_status = BleSetting::STATUSES[:enable]
               end
-            elsif du.ble_type== BleSetting::TYPES[:duration]
-              if now >= du.start_at && now <= du.end_at
+            elsif bs.ble_type==BleSetting::TYPES[:duration]
+              if now >= bs.start_at && now <= bs.end_at
                 ble_status = BleSetting::STATUSES[:enable]
-              elsif now > du.end_at
+              elsif now > bs.end_at
                 ble_status = BleSetting::STATUSES[:expire]
-              elsif now < du.start_at
+              elsif now < bs.start_at
                 ble_status = BleSetting::STATUSES[:disable]
               end
-            elsif du.ble_type== BleSetting::TYPES[:forever]
+            elsif bs.ble_type==BleSetting::TYPES[:forever]
               ble_status = BleSetting::STATUSES[:forever]
             end
           end
