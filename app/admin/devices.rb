@@ -6,6 +6,7 @@ ActiveAdmin.register Device do
   filter :device_status  
   filter :alias
   filter :imei
+  filter :mac
   filter :created_at
 
   scope("全部A") { |device| device.all }
