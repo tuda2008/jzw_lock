@@ -38,7 +38,7 @@ gem 'bootsnap', '>= 1.1.0', require: false
 
 gem 'devise', '~> 4.4.0'
 gem 'activeadmin', '~> 1.3.0'
-gem 'kaminari', '~> 1.1.0'
+gem 'kaminari', '~> 1.2.1'
 
 # redis
 gem 'redis-store', '1.5.0'
